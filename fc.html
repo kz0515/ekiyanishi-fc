@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        input, select, textarea {
+            color: #0f172a !important;
+            font-size: 14px !important;
+        }
+        select {
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230F172A%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 10px 10px;
+            padding-right: 24px !important;
+        }
+        .btn-touch {
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        ::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-3 md:py-6 px-2 sm:px-4">
+
+    <div class="max-w-6xl mx-auto bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 p-3 sm:p-5">
+        
+        <!-- App Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 mb-4 gap-2">
+            <div>
+                <span class="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1">
+                    <i class="fa-solid fa-mobile-screen-button"></i> iPhone15最適化・自動精算ツール
+                </span>
+                <h1 class="text-lg sm:text-2xl font-black text-white tracking-tight">
+                    駅家西FC 遠征費自動精算計算ツール
+                </h1>
+            </div>
+            
+            <button onclick="copyLineText()" class="w-full md:w-auto bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                <i class="fa-solid fa-comment-dots text-sm"></i> LINE用文章をコピー
+            </button>
+        </div>
+
+        <!-- Section 1: メンバー名簿登録 -->
+        <div class="bg-slate-800/90 rounded-xl p-3 mb-4 border border-slate-700/80">
+            <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                <h2 class="text-xs sm:text-sm font-bold text-sky-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-address-book"></i>
+                    1. メンバー名簿登録（※参加候補の全選手と指導者を入力）
+                </h2>
+                <div class="flex gap-2">
+                    <button onclick="resetSampleRoster()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                        <i class="fa-solid fa-rotate-left text-sky-400"></i> 新居浜サンプル読込
+                    </button>
+                    <button onclick="clearRosterText()" class="bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/60 text-xs px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                        <i class="fa-solid fa-eraser"></i> テキスト消去
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">【部員名簿】（コンマ区切り）</label>
+                    <textarea id="playerRosterInput" oninput="updateRoster()" rows="2" class="w-full bg-slate-100 border border-slate-300 rounded p-1.5 text-xs focus:ring-2 focus:ring-sky-500 font-medium" placeholder="石井, 土井, 山本..."></textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">【指導者・その他名簿】<span class="text-sky-300">（※選手に子どもがいない単独指導者のみ入力）</span></label>
+                    <textarea id="adultRosterInput" oninput="updateRoster()" rows="2" class="w-full bg-slate-100 border border-slate-300 rounded p-1.5 text-xs focus:ring-2 focus:ring-sky-500 font-medium" placeholder="（※子どもがチームにいないコーチのみ入力）"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: 遠征条件 -->
+        <div class="bg-slate-800/90 rounded-xl p-3 mb-4 border border-slate-700/80">
+            <h2 class="text-xs sm:text-sm font-bold text-emerald-400 mb-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-sliders"></i>
+                2. 遠征条件の設定
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">遠征名称</label>
+                    <input type="text" id="tripName" value="8月 新居浜1泊2日遠征" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">遠征種別（分担金）</label>
+                    <select id="tripType" onchange="onTripTypeChange();" class="w-full bg-slate-100 rounded pl-2 pr-6 py-1.5 font-semibold appearance-none">
+                        <option value="1">日帰り遠征（分担金 1,000円/日）</option>
+                        <option value="2" selected>1泊2日 宿泊遠征（分担金 2,000円）</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">遠征開始日</label>
+                    <input type="date" id="startDate" onchange="onStartDateChange()" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold text-slate-900 cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">遠征終了日 <span class="text-[10px] text-sky-400 font-normal">（自動反映）</span></label>
+                    <input type="date" id="endDate" onchange="calculate()" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold text-slate-900 cursor-pointer">
+                </div>
+                <div id="accommodationBox">
+                    <label class="block text-slate-300 font-semibold mb-1">
+                        帯同大人(1人目)宿泊費 自動合計
+                        <span class="text-[10px] text-amber-300 block font-normal">※下の保護者(1人目)より全自動集計</span>
+                    </label>
+                    <input type="number" id="chaperoneHotelFee" readonly class="w-full bg-slate-300 text-slate-700 rounded px-2 py-1.5 font-bold cursor-not-allowed" placeholder="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: 配車登録 -->
+        <div class="bg-slate-800/90 rounded-xl p-3 mb-4 border border-slate-700/80">
+            <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                <div>
+                    <h2 class="text-xs sm:text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-car-side"></i>
+                        3. 出車・配車車両の登録
+                    </h2>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="addCar()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                        <i class="fa-solid fa-plus"></i> 車両追加
+                    </button>
+                    <button onclick="clearAllCarFullData()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer shadow btn-touch">
+                        <i class="fa-solid fa-broom"></i> 一括クリア
+                    </button>
+                    <button onclick="removeAllCars()" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 border border-rose-700/50 text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                        <i class="fa-solid fa-trash-can"></i> 行削除
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-300 min-w-[650px]">
+                    <thead class="bg-slate-950 text-slate-300 border-b border-slate-700 font-bold">
+                        <tr>
+                            <th class="p-2 min-w-[75px] text-center">車両名</th>
+                            <th class="p-2 min-w-[150px]">車主（家庭/指導者）</th>
+                            <th class="p-2 text-center min-w-[60px]">荷物車</th>
+                            <th class="p-2 text-center min-w-[85px]">単独指導者<br><span class="text-[9px] font-normal text-sky-300">※高速分担金/ガソリン自腹</span></th>
+                            <th class="p-2 text-right min-w-[110px]">高速代（立替）</th>
+                            <th class="p-2 text-right min-w-[110px]">ガソリン代（立替）</th>
+                            <th class="p-2 text-center min-w-[75px]">乗車人数</th>
+                            <th class="p-2 text-center min-w-[90px]">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="carTableBody" class="divide-y divide-slate-700/60 font-medium">
+                        <!-- Dynamic Car Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 4: 乗車同乗者 ＆ 確定ホテル代・事前集金入力 -->
+        <div class="bg-slate-800/90 rounded-xl p-3 mb-4 border border-slate-700/80">
+            <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                <div>
+                    <h2 class="text-xs sm:text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-users"></i>
+                        4. 乗車選手・確定ホテル代・事前集金入力
+                    </h2>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="openPlayerCheckModal()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow border border-sky-400/40 btn-touch">
+                        <i class="fa-solid fa-square-check text-amber-300 text-sm"></i> ★ 参加選択・一括リセット
+                    </button>
+                    <button onclick="addFamilyRider()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer shadow btn-touch">
+                        <i class="fa-solid fa-user-plus"></i> ＋ 個別追加
+                    </button>
+                    <button onclick="addRider()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                        <i class="fa-solid fa-plus"></i> 空白行追加
+                    </button>
+                    <button onclick="removeAllRiders()" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 border border-rose-700/50 text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                        <i class="fa-solid fa-trash-can"></i> 行全削除
+                    </button>
+                </div>
+            </div>
+
+            <!-- 📊 リアルタイム参加人数カウンター -->
+            <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span class="text-slate-400 font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-clipboard-check text-sky-400"></i> 【現在入力中の参加者内訳】:
+                </span>
+                <div class="flex flex-wrap gap-2 text-[11px] font-bold">
+                    <span class="bg-sky-950/80 text-sky-300 border border-sky-800 px-2 py-0.5 rounded-full">
+                        ⚽ 選手: <span id="cntPlayer" class="text-white font-black text-xs">0</span> 名
+                    </span>
+                    <span class="bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-full">
+                        👔 指導者: <span id="cntCoach" class="text-white font-black text-xs">0</span> 名
+                    </span>
+                    <span class="bg-amber-950/80 text-amber-300 border border-amber-800 px-2 py-0.5 rounded-full">
+                        👨‍👩‍👧 帯同大人・家族: <span id="cntAdult" class="text-white font-black text-xs">0</span> 名
+                    </span>
+                    <span class="bg-slate-800 text-slate-200 border border-slate-700 px-2 py-0.5 rounded-full">
+                        👥 合計: <span id="cntTotal" class="text-amber-400 font-black text-xs">0</span> 名
+                    </span>
+                </div>
+            </div>
+
+            <!-- 🎯 選手・家族選択モーダル -->
+            <div id="playerCheckModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+                <div class="bg-slate-900 border-2 border-sky-500 rounded-2xl max-w-xl w-full p-4 shadow-2xl">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                        <h3 class="text-sm font-bold text-sky-400 flex items-center gap-2">
+                            <i class="fa-solid fa-users-viewfinder"></i> 参加選手と同行家族を選択
+                        </h3>
+                        <button onclick="closePlayerCheckModal()" class="text-slate-400 hover:text-white text-xl font-bold px-2 py-1">✕</button>
+                    </div>
+
+                    <div id="modalPlayerList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto p-1.5 mb-4 bg-slate-950 rounded-xl border border-slate-800">
+                    </div>
+
+                    <div class="flex justify-end gap-2 border-t border-slate-800 pt-3">
+                        <button onclick="closePlayerCheckModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-4 py-2.5 rounded-xl">キャンセル</button>
+                        <button onclick="confirmPlayerSelection()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-1 shadow btn-touch">
+                            <i class="fa-solid fa-check"></i> 一括反映する
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-300 min-w-[780px]">
+                    <thead class="bg-slate-950 text-slate-300 border-b border-slate-700 font-bold">
+                        <tr>
+                            <th class="p-2 min-w-[130px]">氏名（対象者）</th>
+                            <th class="p-2 min-w-[170px]">立場・続柄</th>
+                            <th class="p-2 min-w-[160px]">
+                                <div class="flex items-center justify-between">
+                                    <span>乗車車両</span>
+                                    <button onclick="clearColumnCars()" title="乗車車両を一括クリア" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] px-2 py-1 rounded cursor-pointer shadow btn-touch">
+                                        <i class="fa-solid fa-broom"></i> 一括解除
+                                    </button>
+                                </div>
+                            </th>
+                            <th class="p-2 text-right min-w-[140px] accom-col bg-slate-900 text-amber-300">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span>確定宿泊費(個)</span>
+                                    <div class="flex gap-1">
+                                        <button onclick="copyFirstHotelFeeToAll()" title="1行目の金額を全員にコピー" class="bg-sky-600 hover:bg-sky-500 text-white font-bold text-[10px] px-2 py-1 rounded cursor-pointer shadow btn-touch">
+                                            <i class="fa-solid fa-copy"></i> 全コピー
+                                        </button>
+                                        <button onclick="clearColumnHotelFee()" title="確定宿泊費を一括0クリア" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] px-2 py-1 rounded cursor-pointer shadow btn-touch">
+                                            <i class="fa-solid fa-broom"></i> クリア
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="p-2 text-right min-w-[110px] accom-col bg-slate-900 text-sky-300">
+                                <div class="flex items-center justify-between">
+                                    <span>事前集金額(受)</span>
+                                    <button onclick="clearColumnPaidAdvance()" title="事前集金額を一括0クリア" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] px-2 py-1 rounded cursor-pointer shadow btn-touch">
+                                        <i class="fa-solid fa-broom"></i> クリア
+                                    </button>
+                                </div>
+                            </th>
+                            <th class="p-2 text-center min-w-[90px]">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="riderTableBody" class="divide-y divide-slate-700/60 font-medium">
+                        <!-- Dynamic Rider Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 5: 精算サマリー -->
+        <div class="bg-slate-800/90 rounded-xl p-3 border border-slate-700/80">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-slate-700 pb-2 mb-3 gap-2">
+                <div>
+                    <h2 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-emerald-400"></i>
+                        <span>5. 最終相殺精算サマリー（確定額 - 事前集金）</span>
+                    </h2>
+                </div>
+                <div class="flex flex-wrap gap-2 text-[11px] font-bold">
+                    <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">
+                        全参加選手数: <span id="totalPlayersDisplay" class="text-emerald-400 font-black">0</span> 名
+                    </div>
+                    <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">
+                        選手1人当たり移動実費: <span id="perPersonActualDisplay" class="text-emerald-400 font-black">0</span> 円
+                    </div>
+                    <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">
+                        帯同大人頭割り/選手: <span id="perPlayerChaperoneDisplay" class="text-amber-400 font-black">0</span> 円
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left min-w-[750px]">
+                    <thead class="bg-slate-950 text-slate-300 border-b border-slate-700 font-bold">
+                        <tr>
+                            <th class="p-2">ご家庭 / 区分</th>
+                            <th class="p-2 text-right">移動費実費</th>
+                            <th class="p-2 text-right">移動費分担金</th>
+                            <th class="p-2 text-right">車両補填/手当</th>
+                            <th class="p-2 text-right accom-col text-amber-300">確定宿泊費(頭割り込)</th>
+                            <th class="p-2 text-right text-sky-300">（受）事前集金受領額</th>
+                            <th class="p-2 text-right text-slate-400">（立）交通費領収書</th>
+                            <th class="p-2 text-right font-black text-xs bg-slate-950">最終相殺差額</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody" class="divide-y divide-slate-700/60 font-semibold">
+                        <!-- Calculated Result Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- LINE Output -->
+            <div class="mt-4 pt-3 border-t border-slate-700">
+                <div class="flex justify-between items-center mb-1.5">
+                    <label class="block text-xs font-bold text-sky-400 flex items-center gap-1">
+                        <i class="fa-solid fa-copy"></i> LINE報告用テキスト（自動生成）
+                    </label>
+                    <button onclick="copyLineText()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded transition flex items-center gap-1 cursor-pointer btn-touch">
+                        <i class="fa-solid fa-paste"></i> テキストをコピー
+                    </button>
+                </div>
+                <textarea id="lineTextOutput" rows="9" readonly class="w-full bg-slate-950 text-slate-200 border border-slate-800 rounded-lg p-2.5 text-xs font-mono leading-relaxed focus:outline-none"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let playerRoster = [
+            "石井", "土井", "山本", "福田", "高橋", 
+            "アチャリヤ", "松尾", "田中", "寺岡", "伊藤", 
+            "太枝", "高森", "芝内"
+        ];
+
+        let adultRoster = [];
+
+        let cars = [
+            { id: 1, driverName: "芝内", isEquipment: true, isSoloCoach: false, toll: 8000, gas: 5000 },
+            { id: 2, driverName: "福田", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
+            { id: 3, driverName: "福田", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
+            { id: 4, driverName: "高橋", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
+            { id: 5, driverName: "芝内", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 }
+        ];
+
+        let riders = [];
+
+        try {
+            const today = new Date();
+            document.getElementById('startDate').valueAsDate = today;
+            autoSetEndDate();
+        } catch(e) {}
+
+        function onStartDateChange() {
+            autoSetEndDate();
+            calculate();
+        }
+
+        function onTripTypeChange() {
+            autoSetEndDate();
+            toggleAccommodation();
+            calculate();
+        }
+
+        function autoSetEndDate() {
+            const startVal = document.getElementById('startDate').value;
+            if (!startVal) return;
+
+            const startDate = new Date(startVal);
+            const isAccom = document.getElementById('tripType').value === "2";
+
+            if (isAccom) {
+                startDate.setDate(startDate.getDate() + 1);
+            }
+
+            document.getElementById('endDate').valueAsDate = startDate;
+        }
+
+        function isSameFamily(personName, driverName) {
+            if (!personName || !driverName) return false;
+            let p = String(personName).replace(/コーチ|監督|保護者/g, '').trim();
+            let d = String(driverName).replace(/コーチ|監督|保護者/g, '').trim();
+            return p === d;
+        }
+
+        function resetSampleRoster() {
+            document.getElementById('playerRosterInput').value = playerRoster.join(', ');
+            document.getElementById('adultRosterInput').value = adultRoster.join(', ');
+            
+            riders = [
+                { id: 1, name: "石井", relation: "child", carId: 1, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 11, name: "石井", relation: "parent1", carId: 1, hotelFee: 4800, paidAdvance: 0 },
+                { id: 2, name: "土井", relation: "child", carId: 2, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 21, name: "土井", relation: "parent1", carId: 2, hotelFee: 4800, paidAdvance: 0 },
+                { id: 3, name: "山本", relation: "child", carId: 3, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 31, name: "山本", relation: "parent1", carId: 3, hotelFee: 4800, paidAdvance: 0 },
+                { id: 4, name: "福田", relation: "child", carId: 3, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 5, name: "高橋", relation: "child", carId: 4, hotelFee: 4500, paidAdvance: 11500 },
+                { id: 51, name: "高橋", relation: "parent1", carId: 4, hotelFee: 4800, paidAdvance: 0 },
+                { id: 52, name: "高橋", relation: "parent2", carId: 4, hotelFee: 4800, paidAdvance: 0 },
+                { id: 6, name: "アチャリヤ", relation: "child", carId: 5, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 7, name: "松尾", relation: "child", carId: 1, hotelFee: 4400, paidAdvance: 6600 },
+                { id: 8, name: "田中", relation: "child", carId: 2, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 81, name: "田中", relation: "parent1", carId: 2, hotelFee: 4800, paidAdvance: 0 },
+                { id: 9, name: "寺岡", relation: "child", carId: 3, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 10, name: "伊藤", relation: "child", carId: 4, hotelFee: 4400, paidAdvance: 6600 },
+                { id: 11, name: "太枝", relation: "child", carId: 5, hotelFee: 4500, paidAdvance: 6700 },
+                { id: 12, name: "高森", relation: "child", carId: 1, hotelFee: 4400, paidAdvance: 6600 },
+                { id: 13, name: "芝内", relation: "child", carId: 5, hotelFee: 4500, paidAdvance: 11200 },
+                { id: 131, name: "芝内", relation: "coach", carId: 1, hotelFee: 0, paidAdvance: 4800 },
+                { id: 132, name: "芝内", relation: "parent1", carId: 5, hotelFee: 4500, paidAdvance: 0 },
+                { id: 133, name: "芝内", relation: "parent2", carId: 5, hotelFee: 4500, paidAdvance: 0 }
+            ];
+            updateRoster();
+            showToast("新居浜サンプルデータをセットしました");
+        }
+
+        function clearRosterText() {
+            document.getElementById('playerRosterInput').value = '';
+            document.getElementById('adultRosterInput').value = '';
+            updateRoster();
+            showToast("名簿テキストを消去しました");
+        }
+
+        function updateRoster() {
+            const rawPlayers = document.getElementById('playerRosterInput').value || "";
+            const rawAdults = document.getElementById('adultRosterInput').value || "";
+
+            playerRoster = rawPlayers.split(/[,，\n]/).map(s => s.trim()).filter(s => s.length > 0);
+            adultRoster = rawAdults.split(/[,，\n]/).map(s => s.trim()).filter(s => s.length > 0);
+
+            riders.forEach(r => {
+                if (r.name) {
+                    let clean = String(r.name).replace(/コーチ|監督|保護者/g, '').trim();
+                    if (playerRoster.includes(clean) || adultRoster.includes(clean)) {
+                        r.name = clean;
+                    }
+                }
+            });
+
+            cars.forEach(c => {
+                if (c.driverName) {
+                    let clean = String(c.driverName).replace(/コーチ|監督|保護者/g, '').trim();
+                    if (playerRoster.includes(clean) || adultRoster.includes(clean)) {
+                        c.driverName = clean;
+                    }
+                }
+            });
+
+            calculate();
+        }
+
+        function openPlayerCheckModal() {
+            const container = document.getElementById('modalPlayerList');
+            const currentRiderNames = riders.map(r => r.name);
+
+            container.innerHTML = playerRoster.map((p, idx) => {
+                const isChecked = currentRiderNames.includes(p) || riders.length === 0;
+                const existingFamilyCount = riders.filter(r => r.name === p && r.relation !== 'child').length;
+
+                return `
+                    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2.5 cursor-pointer truncate py-1">
+                            <input type="checkbox" value="${p}" ${isChecked ? 'checked' : ''} class="modal-player-chk w-5 h-5 accent-sky-500 cursor-pointer">
+                            <span class="text-white font-bold text-sm truncate">${p}</span>
+                        </label>
+                        <div class="flex items-center gap-1.5 shrink-0 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                            <span class="text-xs text-slate-400 font-semibold">＋家族:</span>
+                            <input type="number" id="fam_count_${idx}" data-player="${p}" value="${existingFamilyCount}" min="0" max="5" class="w-12 bg-slate-100 text-slate-900 rounded font-bold text-center text-sm p-1">
+                            <span class="text-xs text-slate-400">名</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('playerCheckModal').classList.remove('hidden');
+        }
+
+        function closePlayerCheckModal() {
+            document.getElementById('playerCheckModal').classList.add('hidden');
+        }
+
+        function confirmPlayerSelection() {
+            const selectedCheckboxes = Array.from(document.querySelectorAll('.modal-player-chk:checked'));
+            const selectedPlayers = selectedCheckboxes.map(chk => chk.value);
+            
+            let newRidersList = [];
+
+            selectedPlayers.forEach((p, i) => {
+                let defaultCar = cars[i % cars.length] ? cars[i % cars.length].id : (cars[0] ? cars[0].id : "");
+                
+                newRidersList.push({
+                    id: Date.now() + Math.random(),
+                    name: p,
+                    relation: "child",
+                    carId: defaultCar,
+                    hotelFee: 4500,
+                    paidAdvance: 6700
+                });
+
+                const famInput = document.querySelector(`input[data-player="${p}"]`);
+                const famCount = famInput ? Number(famInput.value) || 0 : 0;
+
+                for (let f = 0; f < famCount; f++) {
+                    const isFirstAdult = (f === 0);
+                    newRidersList.push({
+                        id: Date.now() + Math.random(),
+                        name: p,
+                        relation: isFirstAdult ? "parent1" : "parent2", 
+                        carId: defaultCar,
+                        hotelFee: 4800,
+                        paidAdvance: 0
+                    });
+                }
+            });
+
+            const extraRiders = riders.filter(r => !playerRoster.includes(r.name));
+
+            riders = [...newRidersList, ...extraRiders];
+            calculate();
+            closePlayerCheckModal();
+            showToast(`反映しました！`);
+        }
+
+        function toggleAccommodation() {
+            const isAccom = document.getElementById('tripType').value === "2";
+            document.getElementById('accommodationBox').classList.toggle('hidden', !isAccom);
+            document.querySelectorAll('.accom-col').forEach(el => el.classList.toggle('hidden', !isAccom));
+        }
+
+        function addFamilyRider() {
+            const defaultCarId = cars.length > 0 ? cars[0].id : "";
+            const defaultName = playerRoster.length > 0 ? playerRoster[0] : "";
+            riders.push({
+                id: Date.now() + Math.random(),
+                name: defaultName,
+                relation: "parent1",
+                carId: defaultCarId,
+                hotelFee: 0,
+                paidAdvance: 0
+            });
+            calculate();
+            showToast("行を追加しました");
+        }
+
+        function onRelationChange(index, value) {
+            riders[index].relation = value;
+            if (value === 'coach') {
+                riders[index].hotelFee = 0;
+            }
+            calculate();
+        }
+
+        function clearColumnCars() {
+            riders.forEach(r => r.carId = "");
+            calculate();
+            showToast("すべての乗車車両指定を一括解除しました");
+        }
+
+        function copyFirstHotelFeeToAll() {
+            if (riders.length === 0) return;
+            const firstFee = Number(riders[0].hotelFee) || 0;
+            
+            riders.forEach(r => {
+                if (r.relation !== 'coach') {
+                    r.hotelFee = firstFee;
+                }
+            });
+            calculate();
+            showToast(`1行目の宿泊費(￥${firstFee.toLocaleString()})を全員にコピーしました！`);
+        }
+
+        function clearColumnHotelFee() {
+            riders.forEach(r => r.hotelFee = 0);
+            calculate();
+            showToast("すべての確定宿泊費をクリアしました");
+        }
+
+        function clearColumnPaidAdvance() {
+            riders.forEach(r => r.paidAdvance = 0);
+            calculate();
+            showToast("すべての事前集金額をクリアしました");
+        }
+
+        function renderInputs() {
+            const allRiderOptions = Array.from(new Set([...playerRoster, ...adultRoster]));
+
+            // Render Cars
+            const carBody = document.getElementById('carTableBody');
+            carBody.innerHTML = cars.map((car, index) => {
+                const hostedCount = riders.filter(r => {
+                    if (Number(r.carId) !== car.id) return false;
+                    const sameFam = isSameFamily(r.name, car.driverName);
+                    return sameFam ? (r.relation === 'child') : true;
+                }).length;
+
+                let driverSelectOptions = `<option value="" ${!car.driverName ? 'selected' : ''}>-- 車主を選択 --</option>`;
+                driverSelectOptions += allRiderOptions.map(n => 
+                    `<option value="${n}" ${car.driverName === n ? 'selected' : ''}>${n}${playerRoster.includes(n) ? '保護者' : ''}</option>`
+                ).join('');
+
+                const carNameLabel = car.driverName ? `${car.driverName}号` : `未設定号`;
+
+                return `
+                    <tr class="hover:bg-slate-700/30">
+                        <td class="p-2 text-center font-black text-sky-400">
+                            ${carNameLabel}
+                        </td>
+                        <td class="p-2">
+                            <select onchange="cars[${index}].driverName=this.value; calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs font-bold text-slate-900 appearance-none cursor-pointer">
+                                ${driverSelectOptions}
+                            </select>
+                        </td>
+                        <td class="p-2 text-center">
+                            <input type="checkbox" ${car.isEquipment ? 'checked' : ''} onchange="cars[${index}].isEquipment=this.checked; calculate();" class="w-5 h-5 accent-emerald-500 cursor-pointer">
+                        </td>
+                        <td class="p-2 text-center">
+                            <input type="checkbox" ${car.isSoloCoach ? 'checked' : ''} onchange="cars[${index}].isSoloCoach=this.checked; calculate();" class="w-5 h-5 accent-sky-500 cursor-pointer">
+                        </td>
+                        <td class="p-2">
+                            <input type="number" value="${car.toll ? car.toll : ''}" onchange="cars[${index}].toll=Number(this.value); calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs text-right font-bold text-slate-900" placeholder="0">
+                        </td>
+                        <td class="p-2">
+                            <input type="number" value="${car.gas ? car.gas : ''}" onchange="cars[${index}].gas=Number(this.value); calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs text-right font-bold text-emerald-900" placeholder="0">
+                        </td>
+                        <td class="p-2 text-center">
+                            <span class="inline-flex items-center gap-1 bg-slate-950 text-emerald-400 font-bold px-2.5 py-1 rounded border border-slate-700 text-xs">
+                                ${hostedCount} 名
+                            </span>
+                        </td>
+                        <td class="p-2 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="clearSingleCarRow(${index})" title="クリア" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-broom"></i></button>
+                                <button onclick="removeCar(${index})" title="削除" class="bg-rose-800 hover:bg-rose-700 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Render Riders
+            const riderBody = document.getElementById('riderTableBody');
+            const claimedDriverCars = new Set();
+
+            riderBody.innerHTML = riders.map((rider, index) => {
+                const isAdult = (rider.relation === 'parent1' || rider.relation === 'coach');
+
+                const carOptions = cars.map((c) => {
+                    const isFam = isSameFamily(rider.name, c.driverName);
+                    const isSelected = (Number(rider.carId) === c.id);
+                    
+                    let isDriverSelf = false;
+                    if (isAdult && isFam && isSelected && !claimedDriverCars.has(c.id)) {
+                        isDriverSelf = true;
+                        claimedDriverCars.add(c.id);
+                    }
+
+                    const driverLabel = c.driverName ? `${c.driverName}号` : '未設定号';
+                    return `<option value="${c.id}" ${isSelected ? 'selected' : ''}>${driverLabel}${isDriverSelf ? '（※運転）' : ''}</option>`;
+                }).join('');
+
+                let riderSelectOptions = `<option value="" ${!rider.name ? 'selected' : ''}>-- 名前を選択 --</option>`;
+                riderSelectOptions += allRiderOptions.map(n => 
+                    `<option value="${n}" ${rider.name === n ? 'selected' : ''}>${n}</option>`
+                ).join('');
+
+                const isCoach = (rider.relation === 'coach');
+
+                return `
+                    <tr class="hover:bg-slate-700/30">
+                        <td class="p-2">
+                            <select onchange="riders[${index}].name=this.value; calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs font-bold text-slate-900 appearance-none cursor-pointer">
+                                ${riderSelectOptions}
+                            </select>
+                        </td>
+                        <td class="p-2">
+                            <select onchange="onRelationChange(${index}, this.value)" class="w-full bg-slate-100 rounded pl-2 py-1.5 text-xs font-semibold appearance-none cursor-pointer">
+                                <option value="child" ${rider.relation === 'child' ? 'selected' : ''}>本人 (選手)</option>
+                                <option value="parent1" ${rider.relation === 'parent1' ? 'selected' : ''}>保護者(1人目・頭割り対象)</option>
+                                <option value="parent2" ${rider.relation === 'parent2' ? 'selected' : ''}>保護者(2人目/身内・助手席等)</option>
+                                <option value="sibling" ${rider.relation === 'sibling' ? 'selected' : ''}>兄弟・その他家族</option>
+                                <option value="coach" ${rider.relation === 'coach' ? 'selected' : ''}>指導者 (宿泊部費)</option>
+                            </select>
+                        </td>
+                        <td class="p-2">
+                            <select onchange="riders[${index}].carId=this.value ? Number(this.value) : ''; calculate();" class="w-full bg-slate-100 rounded pl-2 py-1.5 text-xs font-semibold appearance-none cursor-pointer">
+                                <option value="">-- 車両を選択 --</option>
+                                ${carOptions}
+                            </select>
+                        </td>
+                        <td class="p-2 text-right accom-col">
+                            <input type="number" value="${isCoach ? '' : (rider.hotelFee ? rider.hotelFee : '')}" ${isCoach ? 'disabled' : ''} onchange="riders[${index}].hotelFee=Number(this.value); calculate();" class="w-full ${isCoach ? 'bg-slate-300 text-slate-500' : 'bg-slate-100 text-slate-900'} font-bold rounded px-2 py-1.5 text-xs text-right" placeholder="${isCoach ? '部費支給' : '0'}">
+                        </td>
+                        <td class="p-2 text-right accom-col">
+                            <input type="number" value="${rider.paidAdvance ? rider.paidAdvance : ''}" onchange="riders[${index}].paidAdvance=Number(this.value); calculate();" class="w-full bg-sky-100 text-sky-950 font-bold rounded px-2 py-1.5 text-xs text-right border border-sky-300" placeholder="0">
+                        </td>
+                        <td class="p-2 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="clearSingleRiderRow(${index})" title="クリア" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-broom"></i></button>
+                                <button onclick="removeRider(${index})" title="削除" class="bg-rose-800 hover:bg-rose-700 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            toggleAccommodation();
+        }
+
+        function addCar() {
+            cars.push({ id: Date.now(), driverName: "", isEquipment: false, isSoloCoach: false, toll: 0, gas: 0 });
+            calculate();
+        }
+
+        function clearSingleCarRow(index) {
+            cars[index].driverName = "";
+            cars[index].isEquipment = false;
+            cars[index].isSoloCoach = false;
+            cars[index].toll = 0;
+            cars[index].gas = 0;
+            calculate();
+        }
+
+        function removeCar(index) {
+            cars.splice(index, 1);
+            calculate();
+        }
+
+        function clearAllCarFullData() {
+            cars.forEach(c => {
+                c.driverName = "";
+                c.isEquipment = false;
+                c.isSoloCoach = false;
+                c.toll = 0;
+                c.gas = 0;
+            });
+            calculate();
+            showToast("配車データを一括クリアしました");
+        }
+
+        function removeAllCars() {
+            cars = [];
+            calculate();
+            showToast("車両の行を削除しました");
+        }
+
+        function addRider() {
+            const defaultCarId = cars.length > 0 ? cars[0].id : "";
+            riders.push({ id: Date.now(), name: "", relation: "child", carId: defaultCarId, hotelFee: 0, paidAdvance: 0 });
+            calculate();
+        }
+
+        function clearSingleRiderRow(index) {
+            riders[index].name = "";
+            riders[index].relation = "child";
+            riders[index].carId = "";
+            riders[index].hotelFee = 0;
+            riders[index].paidAdvance = 0;
+            calculate();
+        }
+
+        function removeRider(index) {
+            riders.splice(index, 1);
+            calculate();
+        }
+
+        function removeAllRiders() {
+            riders = [];
+            calculate();
+            showToast("同乗者の行を削除しました");
+        }
+
+        function getCompensation(hostedCount, isEquipment) {
+            if (isEquipment) return 2000;
+            if (hostedCount >= 7) return 3000;
+            if (hostedCount >= 5) return 2000;
+            if (hostedCount >= 4) return 1500;
+            if (hostedCount >= 2) return 1000;
+            return 0;
+        }
+
+        let calculatedResults = [];
+
+        function calculate() {
+            let autoChaperoneSum = riders
+                .filter(r => r.relation === 'parent1')
+                .reduce((sum, r) => sum + (Number(r.hotelFee) || 0), 0);
+            
+            document.getElementById('chaperoneHotelFee').value = autoChaperoneSum;
+
+            renderInputs();
+
+            const isAccom = document.getElementById('tripType').value === "2";
+            const days = isAccom ? 2 : 1;
+            const feePerChild = 1000 * days;
+
+            let cntPlayer = riders.filter(r => r.relation === 'child' && r.name).length;
+            let cntCoach = riders.filter(r => r.relation === 'coach' && r.name).length;
+            let cntAdult = riders.filter(r => r.relation !== 'child' && r.relation !== 'coach' && r.name).length;
+            let cntTotal = riders.filter(r => r.name).length;
+
+            document.getElementById('cntPlayer').innerText = cntPlayer;
+            document.getElementById('cntCoach').innerText = cntCoach;
+            document.getElementById('cntAdult').innerText = cntAdult;
+            document.getElementById('cntTotal').innerText = cntTotal;
+
+            let totalPlayers = cntPlayer;
+
+            let totalReceiptsForPlayers = cars.reduce((sum, c) => {
+                let carToll = Number(c.toll) || 0;
+                let carGas = Number(c.gas) || 0;
+                if (c.isSoloCoach) {
+                    return sum;
+                } else {
+                    return sum + carToll + carGas;
+                }
+            }, 0);
+
+            let perPlayerActual = totalPlayers > 0 ? Math.round(totalReceiptsForPlayers / totalPlayers) : 0;
+
+            let chaperonePerPlayer = (totalPlayers > 0 && isAccom) ? Math.round(autoChaperoneSum / totalPlayers) : 0;
+
+            document.getElementById('totalPlayersDisplay').innerText = totalPlayers;
+            document.getElementById('perPersonActualDisplay').innerText = perPlayerActual.toLocaleString();
+            document.getElementById('perPlayerChaperoneDisplay').innerText = chaperonePerPlayer.toLocaleString();
+
+            let familyMap = {};
+
+            // Drivers
+            cars.forEach(car => {
+                if (!car.driverName) return;
+                let fname = car.driverName.replace(/コーチ|監督|保護者/g, '').trim();
+
+                if (!familyMap[fname]) {
+                    familyMap[fname] = {
+                        name: fname + (playerRoster.includes(fname) ? '保護者' : ''),
+                        type: car.isEquipment ? "指導者/荷物車" : (car.isSoloCoach ? "単独指導者車" : "配車ドライバー"),
+                        actualTravel: 0,
+                        seatFee: 0,
+                        compensation: 0,
+                        hotelFee: 0,
+                        paidAdvance: 0,
+                        receipt: 0
+                    };
+                }
+
+                let hostedCount = riders.filter(r => {
+                    if (Number(r.carId) !== car.id) return false;
+                    const sameFam = isSameFamily(r.name, car.driverName);
+                    return sameFam ? (r.relation === 'child') : true;
+                }).length;
+
+                let childCount = riders.filter(r => Number(r.carId) === car.id && isSameFamily(r.name, car.driverName) && r.relation === 'child').length;
+
+                familyMap[fname].actualTravel += childCount * perPlayerActual;
+                familyMap[fname].seatFee += childCount * feePerChild;
+                familyMap[fname].compensation -= getCompensation(hostedCount, car.isEquipment);
+                familyMap[fname].hotelFee += isAccom ? (childCount * chaperonePerPlayer) : 0;
+                
+                if (car.isSoloCoach) {
+                    familyMap[fname].receipt += Number(car.toll) || 0;
+                } else {
+                    familyMap[fname].receipt += (Number(car.toll) || 0) + (Number(car.gas) || 0);
+                }
+            });
+
+            // Riders
+            riders.forEach(rider => {
+                if (!rider.name) return;
+                let fname = rider.name.replace(/コーチ|監督|保護者/g, '').trim();
+
+                if (!familyMap[fname]) {
+                    familyMap[fname] = {
+                        name: fname + (rider.relation !== 'child' && rider.relation !== 'coach' && playerRoster.includes(fname) ? '保護者' : ''),
+                        type: rider.relation === 'coach' ? "指導者" : (rider.relation === 'child' ? "選手家庭" : "帯同家庭"),
+                        actualTravel: 0,
+                        seatFee: 0,
+                        compensation: 0,
+                        hotelFee: 0,
+                        paidAdvance: 0,
+                        receipt: 0
+                    };
+                }
+
+                let isChild = (rider.relation === 'child');
+                let isCoach = (rider.relation === 'coach');
+                let isParent1 = (rider.relation === 'parent1');
+
+                let isDriverChild = cars.some(c => isSameFamily(fname, c.driverName) && Number(rider.carId) === c.id);
+
+                if (isChild && !isDriverChild) {
+                    familyMap[fname].actualTravel += perPlayerActual;
+                    familyMap[fname].seatFee += feePerChild;
+                    if (isAccom) familyMap[fname].hotelFee += chaperonePerPlayer;
+                }
+
+                if (isAccom && !isCoach && !isParent1) {
+                    familyMap[fname].hotelFee += Number(rider.hotelFee) || 0;
+                }
+                
+                if (isAccom) {
+                    familyMap[fname].paidAdvance += Number(rider.paidAdvance) || 0;
+                }
+            });
+
+            calculatedResults = Object.values(familyMap).map(fam => {
+                let totalCost = fam.actualTravel + fam.seatFee + fam.compensation + fam.hotelFee;
+                let totalPaid = fam.paidAdvance + fam.receipt;
+                let netAmount = totalCost - totalPaid;
+
+                return {
+                    ...fam,
+                    netAmount: netAmount
+                };
+            });
+
+            // Render Results Table
+            const resultBody = document.getElementById('resultTableBody');
+            resultBody.innerHTML = calculatedResults.map(res => {
+                const isRefund = res.netAmount < 0;
+                return `
+                    <tr class="hover:bg-slate-700/40 border-b border-slate-700/50">
+                        <td class="p-2 text-slate-200">
+                            <div class="font-bold text-white">${res.name} 様</div>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${res.type}</span>
+                        </td>
+                        <td class="p-2 text-right text-slate-300">￥${res.actualTravel.toLocaleString()}</td>
+                        <td class="p-2 text-right ${res.seatFee === 0 ? 'text-slate-500' : 'text-slate-300'}">￥${res.seatFee.toLocaleString()}</td>
+                        <td class="p-2 text-right ${res.compensation < 0 ? 'text-emerald-400 font-bold' : 'text-slate-500'}">￥${res.compensation.toLocaleString()}</td>
+                        <td class="p-2 text-right accom-col ${isAccom ? '' : 'hidden'} text-amber-300">￥${res.hotelFee.toLocaleString()}</td>
+                        <td class="p-2 text-right text-sky-300">￥${res.paidAdvance.toLocaleString()}</td>
+                        <td class="p-2 text-right text-slate-400">￥${res.receipt.toLocaleString()}</td>
+                        <td class="p-2 text-right font-black text-xs bg-slate-950 ${isRefund ? 'text-emerald-400' : 'text-amber-400'}">
+                            ${isRefund ? '【返金】' : '【追徴】'} ￥${Math.abs(res.netAmount).toLocaleString()}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            generateLineText();
+        }
+
+        function getFormattedDateRange() {
+            const startVal = document.getElementById('startDate').value;
+            const endVal = document.getElementById('endDate').value;
+
+            if (!startVal) return "未設定";
+            
+            const startStr = startVal.replace(/-/g, '/');
+            const endStr = endVal.replace(/-/g, '/');
+
+            if (!endVal || startVal === endVal) {
+                return `${startStr}（日帰り）`;
+            }
+            return `${startStr} 〜 ${endStr}`;
+        }
+
+        function generateLineText() {
+            const tripName = document.getElementById('tripName').value;
+            const tripDateRange = getFormattedDateRange();
+            
+            let text = `【駅家西FC 遠征費・合宿費 最終精算のお知らせ】\n`;
+            text += `遠征名：${tripName}\n日程：${tripDateRange}\n------------------------\n`;
+            text += `※交通費実費・分担金・配車手当・確定ホテル代・帯同大人頭割りを含め、事前集金お預かり額との相殺差額を算出いたしました。\n\n`;
+
+            calculatedResults.forEach(r => {
+                if (r.netAmount < 0) {
+                    text += `● ${r.name} 様： 【返金 ￥${Math.abs(r.netAmount).toLocaleString()}】\n`;
+                } else if (r.netAmount > 0) {
+                    text += `● ${r.name} 様： 【追加徴収 ￥${r.netAmount.toLocaleString()}】\n`;
+                } else {
+                    text += `● ${r.name} 様： 【精算差額 ￥0（相殺完了）】\n`;
+                }
+            });
+
+            text += `------------------------\n※会計担当より順次、差額の返金/集金を行わせていただきます。`;
+
+            document.getElementById('lineTextOutput').value = text;
+        }
+
+        function copyLineText() {
+            const copyText = document.getElementById("lineTextOutput");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showToast("LINE報告用文章をコピーしました！");
+            } catch (err) {
+                showToast("コピーに失敗しました。");
+            }
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById('customToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'customToast';
+                toast.className = 'fixed bottom-5 right-5 bg-emerald-600 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 z-50 flex items-center gap-2 border border-emerald-400/30';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-200 text-sm"></i> ${message}`;
+            toast.classList.remove('translate-y-10', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-10', 'opacity-0');
+            }, 3000);
+        }
+
+        window.onload = function() {
+            resetSampleRoster();
+        };
+    </script>
+</body>
+</html>
