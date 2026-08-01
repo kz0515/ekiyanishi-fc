@@ -13,6 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body {
@@ -66,9 +68,17 @@
                 </h1>
             </div>
             
-            <button onclick="copyLineText()" class="w-full md:w-auto bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
-                <i class="fa-solid fa-comment-dots text-sm"></i> LINE用文章をコピー
-            </button>
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <button onclick="saveDraftData()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-2.5 rounded-xl transition flex items-center justify-center gap-1 shadow cursor-pointer btn-touch">
+                    <i class="fa-solid fa-floppy-disk"></i> 途中保存
+                </button>
+                <button onclick="loadDraftData()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs px-3 py-2.5 rounded-xl transition flex items-center justify-center gap-1 shadow cursor-pointer btn-touch">
+                    <i class="fa-solid fa-folder-open text-amber-400"></i> 保存データ読込
+                </button>
+                <button onclick="copyLineText()" class="flex-1 md:flex-none bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                    <i class="fa-solid fa-comment-dots text-sm"></i> LINE用文章をコピー
+                </button>
+            </div>
         </div>
 
         <!-- Section 1: メンバー名簿登録 -->
@@ -133,6 +143,28 @@
                     </label>
                     <input type="number" id="chaperoneHotelFee" readonly class="w-full bg-slate-300 text-slate-700 rounded px-2 py-1.5 font-bold cursor-not-allowed" placeholder="0">
                 </div>
+            </div>
+        </div>
+
+        <!-- Section 2.5: 現地追加経費 -->
+        <div class="bg-slate-800/90 rounded-xl p-3 mb-4 border border-slate-700/80">
+            <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                <h2 class="text-xs sm:text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-receipt"></i>
+                    現地追加経費（※洗濯代・氷代等、選手全員で割り勘）
+                </h2>
+                <button type="button" onclick="addExpenseRow()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                    <i class="fa-solid fa-plus"></i> 項目を追加
+                </button>
+            </div>
+            
+            <div id="expenseContainer" class="space-y-2 mb-2">
+                <!-- 動的生成エリア -->
+            </div>
+
+            <div class="flex justify-between items-center px-1 text-xs text-slate-300 border-t border-slate-700/60 pt-2">
+                <span>追加経費 合計: <strong id="totalExpenseText" class="text-amber-400 font-black">0円</strong></span>
+                <span class="text-[11px] text-slate-400">（参加選手1人あたり: <span id="perPlayerExpenseText" class="text-emerald-400 font-bold">0円</span> 加算）</span>
             </div>
         </div>
 
@@ -346,6 +378,25 @@
                 </div>
                 <textarea id="lineTextOutput" rows="9" readonly class="w-full bg-slate-950 text-slate-200 border border-slate-800 rounded-lg p-2.5 text-xs font-mono leading-relaxed focus:outline-none"></textarea>
             </div>
+
+            <!-- 保存・書き出しボタンエリア -->
+            <div class="mt-4 pt-3 border-t border-slate-700/80">
+                <label class="block text-xs font-bold text-slate-400 mb-2">
+                    <i class="fa-solid fa-download"></i> 精算結果の保存・書き出し
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button onclick="downloadCSV()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i> CSVで保存 (Excel用)
+                    </button>
+                    <button onclick="downloadText()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                        <i class="fa-solid fa-file-lines text-sky-300"></i> テキストファイル保存
+                    </button>
+                    <button onclick="exportToPDF()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                        <i class="fa-solid fa-file-pdf text-amber-400"></i> PDFで保存 (直接ダウンロード)
+                    </button>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -368,6 +419,11 @@
         ];
 
         let riders = [];
+
+        let extraExpenses = [
+            { name: "洗濯代", amount: 1200 },
+            { name: "氷代（2日分）", amount: 800 }
+        ];
 
         try {
             const today = new Date();
@@ -408,6 +464,8 @@
         }
 
         function resetSampleRoster() {
+            if (!confirm("サンプルデータを読み込みますか？（入力中の内容はリセットされます）")) return;
+
             document.getElementById('playerRosterInput').value = playerRoster.join(', ');
             document.getElementById('adultRosterInput').value = adultRoster.join(', ');
             
@@ -440,6 +498,7 @@
         }
 
         function clearRosterText() {
+            if (!confirm("名簿テキストをクリアしますか？")) return;
             document.getElementById('playerRosterInput').value = '';
             document.getElementById('adultRosterInput').value = '';
             updateRoster();
@@ -472,6 +531,72 @@
             });
 
             calculate();
+        }
+
+        function renderExpenseRows() {
+            const container = document.getElementById('expenseContainer');
+            container.innerHTML = extraExpenses.map((exp, index) => `
+                <div class="flex items-center gap-2">
+                    <input type="text" value="${exp.name || ''}" placeholder="項目名（例: 洗濯代）" onchange="extraExpenses[${index}].name=this.value; calculate();" class="flex-1 bg-slate-100 rounded px-2 py-1 text-xs font-semibold text-slate-900">
+                    <div class="relative w-28">
+                        <input type="number" value="${exp.amount !== undefined ? exp.amount : ''}" placeholder="金額" onchange="extraExpenses[${index}].amount=Number(this.value); calculate();" class="w-full bg-slate-100 rounded pl-2 pr-6 py-1 text-xs text-right font-bold text-slate-900">
+                        <span class="absolute right-2 top-1 text-[10px] text-slate-500">円</span>
+                    </div>
+                    <button type="button" onclick="extraExpenses.splice(${index},1); renderExpenseRows(); calculate();" class="text-rose-400 hover:text-rose-300 px-1.5 py-1 text-xs cursor-pointer">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addExpenseRow() {
+            extraExpenses.push({ name: "", amount: 0 });
+            renderExpenseRows();
+            calculate();
+        }
+
+        function saveDraftData() {
+            if (!confirm("現在の入力内容をブラウザに途中保存しますか？")) return;
+            const data = {
+                tripName: document.getElementById('tripName').value,
+                tripType: document.getElementById('tripType').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                playerRosterText: document.getElementById('playerRosterInput').value,
+                adultRosterText: document.getElementById('adultRosterInput').value,
+                cars: cars,
+                riders: riders,
+                extraExpenses: extraExpenses
+            };
+            localStorage.setItem('ekiyanishi_fc_draft', JSON.stringify(data));
+            showToast("途中の入力状態を保存しました！");
+        }
+
+        function loadDraftData() {
+            const saved = localStorage.getItem('ekiyanishi_fc_draft');
+            if (!saved) {
+                alert("保存されたデータが見つかりません。");
+                return;
+            }
+            if (!confirm("前回保存したデータを読み込みますか？（現在入力中の内容は上書きされます）")) return;
+            try {
+                const data = JSON.parse(saved);
+                document.getElementById('tripName').value = data.tripName || '';
+                document.getElementById('tripType').value = data.tripType || '2';
+                document.getElementById('startDate').value = data.startDate || '';
+                document.getElementById('endDate').value = data.endDate || '';
+                document.getElementById('playerRosterInput').value = data.playerRosterText || '';
+                document.getElementById('adultRosterInput').value = data.adultRosterText || '';
+                
+                cars = data.cars || [];
+                riders = data.riders || [];
+                extraExpenses = data.extraExpenses || [];
+
+                updateRoster();
+                showToast("保存していたデータを復元しました！");
+            } catch(e) {
+                alert("データの復元に失敗しました。");
+            }
         }
 
         function openPlayerCheckModal() {
@@ -576,6 +701,7 @@
         }
 
         function clearColumnCars() {
+            if (!confirm("すべての乗車車両指定を一括解除しますか？")) return;
             riders.forEach(r => r.carId = "");
             calculate();
             showToast("すべての乗車車両指定を一括解除しました");
@@ -584,6 +710,7 @@
         function copyFirstHotelFeeToAll() {
             if (riders.length === 0) return;
             const firstFee = Number(riders[0].hotelFee) || 0;
+            if (!confirm(`1行目の宿泊費(￥${firstFee.toLocaleString()})を全員にコピーしますか？`)) return;
             
             riders.forEach(r => {
                 if (r.relation !== 'coach') {
@@ -595,18 +722,21 @@
         }
 
         function clearColumnHotelFee() {
+            if (!confirm("すべての確定宿泊費を0にクリアしますか？")) return;
             riders.forEach(r => r.hotelFee = 0);
             calculate();
             showToast("すべての確定宿泊費をクリアしました");
         }
 
         function clearColumnPaidAdvance() {
+            if (!confirm("すべての事前集金額を0にクリアしますか？")) return;
             riders.forEach(r => r.paidAdvance = 0);
             calculate();
             showToast("すべての事前集金額をクリアしました");
         }
 
         function renderInputs() {
+            renderExpenseRows();
             const allRiderOptions = Array.from(new Set([...playerRoster, ...adultRoster]));
 
             // Render Cars
@@ -751,6 +881,7 @@
         }
 
         function clearAllCarFullData() {
+            if (!confirm("配車データを一括クリアしますか？")) return;
             cars.forEach(c => {
                 c.driverName = "";
                 c.isEquipment = false;
@@ -763,6 +894,7 @@
         }
 
         function removeAllCars() {
+            if (!confirm("車両の行をすべて削除しますか？")) return;
             cars = [];
             calculate();
             showToast("車両の行を削除しました");
@@ -789,6 +921,7 @@
         }
 
         function removeAllRiders() {
+            if (!confirm("同乗者の行をすべて削除しますか？")) return;
             riders = [];
             calculate();
             showToast("同乗者の行を削除しました");
@@ -830,6 +963,12 @@
 
             let totalPlayers = cntPlayer;
 
+            const totalExtraExpense = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            const perPlayerExpense = (totalPlayers > 0 && totalExtraExpense > 0) ? Math.ceil((totalExtraExpense / totalPlayers) / 10) * 10 : 0;
+            
+            document.getElementById('totalExpenseText').innerText = totalExtraExpense.toLocaleString() + "円";
+            document.getElementById('perPlayerExpenseText').innerText = perPlayerExpense.toLocaleString() + "円";
+
             let totalReceiptsForPlayers = cars.reduce((sum, c) => {
                 let carToll = Number(c.toll) || 0;
                 let carGas = Number(c.gas) || 0;
@@ -863,6 +1002,7 @@
                         seatFee: 0,
                         compensation: 0,
                         hotelFee: 0,
+                        extraExpense: 0,
                         paidAdvance: 0,
                         receipt: 0
                     };
@@ -880,6 +1020,7 @@
                 familyMap[fname].seatFee += childCount * feePerChild;
                 familyMap[fname].compensation -= getCompensation(hostedCount, car.isEquipment);
                 familyMap[fname].hotelFee += isAccom ? (childCount * chaperonePerPlayer) : 0;
+                familyMap[fname].extraExpense += childCount * perPlayerExpense;
                 
                 if (car.isSoloCoach) {
                     familyMap[fname].receipt += Number(car.toll) || 0;
@@ -901,6 +1042,7 @@
                         seatFee: 0,
                         compensation: 0,
                         hotelFee: 0,
+                        extraExpense: 0,
                         paidAdvance: 0,
                         receipt: 0
                     };
@@ -915,6 +1057,7 @@
                 if (isChild && !isDriverChild) {
                     familyMap[fname].actualTravel += perPlayerActual;
                     familyMap[fname].seatFee += feePerChild;
+                    familyMap[fname].extraExpense += perPlayerExpense;
                     if (isAccom) familyMap[fname].hotelFee += chaperonePerPlayer;
                 }
 
@@ -928,7 +1071,7 @@
             });
 
             calculatedResults = Object.values(familyMap).map(fam => {
-                let totalCost = fam.actualTravel + fam.seatFee + fam.compensation + fam.hotelFee;
+                let totalCost = fam.actualTravel + fam.seatFee + fam.compensation + fam.hotelFee + fam.extraExpense;
                 let totalPaid = fam.paidAdvance + fam.receipt;
                 let netAmount = totalCost - totalPaid;
 
@@ -951,7 +1094,7 @@
                         <td class="p-2 text-right text-slate-300">￥${res.actualTravel.toLocaleString()}</td>
                         <td class="p-2 text-right ${res.seatFee === 0 ? 'text-slate-500' : 'text-slate-300'}">￥${res.seatFee.toLocaleString()}</td>
                         <td class="p-2 text-right ${res.compensation < 0 ? 'text-emerald-400 font-bold' : 'text-slate-500'}">￥${res.compensation.toLocaleString()}</td>
-                        <td class="p-2 text-right accom-col ${isAccom ? '' : 'hidden'} text-amber-300">￥${res.hotelFee.toLocaleString()}</td>
+                        <td class="p-2 text-right accom-col ${isAccom ? '' : 'hidden'} text-amber-300">￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td>
                         <td class="p-2 text-right text-sky-300">￥${res.paidAdvance.toLocaleString()}</td>
                         <td class="p-2 text-right text-slate-400">￥${res.receipt.toLocaleString()}</td>
                         <td class="p-2 text-right font-black text-xs bg-slate-950 ${isRefund ? 'text-emerald-400' : 'text-amber-400'}">
@@ -985,7 +1128,17 @@
             
             let text = `【駅家西FC 遠征費・合宿費 最終精算のお知らせ】\n`;
             text += `遠征名：${tripName}\n日程：${tripDateRange}\n------------------------\n`;
-            text += `※交通費実費・分担金・配車手当・確定ホテル代・帯同大人頭割りを含め、事前集金お預かり額との相殺差額を算出いたしました。\n\n`;
+            
+            const totalExtra = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            if (totalExtra > 0) {
+                text += `※現地追加経費内訳 (合計 ${totalExtra.toLocaleString()}円 / 選手割り勘):\n`;
+                extraExpenses.forEach(exp => {
+                    if (exp.name) text += ` ・${exp.name}: ${Number(exp.amount).toLocaleString()}円\n`;
+                });
+                text += `------------------------\n`;
+            }
+
+            text += `※交通費実費・分担金・配車手当・確定ホテル代・現地追加雑費・帯同大人頭割りを含め、事前集金お預かり額との相殺差額を算出いたしました。\n\n`;
 
             calculatedResults.forEach(r => {
                 if (r.netAmount < 0) {
@@ -1013,6 +1166,123 @@
             } catch (err) {
                 showToast("コピーに失敗しました。");
             }
+        }
+
+        function downloadCSV() {
+            if (!confirm("精算結果をCSVファイル（Excel用）としてダウンロードしますか？")) return;
+            let csvContent = "\uFEFFご家庭/区分,移動費実費,移動費分担金,車両補填/手当,確定宿泊費・雑費,事前集金受領額,交通費領収書,最終相殺差額\n";
+            calculatedResults.forEach(res => {
+                const isRefund = res.netAmount < 0;
+                const status = isRefund ? `返金:${Math.abs(res.netAmount)}` : `追徴:${res.netAmount}`;
+                csvContent += `"${res.name} (${res.type})",${res.actualTravel},${res.seatFee},${res.compensation},${res.hotelFee + res.extraExpense},${res.paidAdvance},${res.receipt},"${status}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `駅家西FC_精算結果_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        function downloadText() {
+            if (!confirm("精算報告文をテキストファイルとしてダウンロードしますか？")) return;
+            const text = document.getElementById('lineTextOutput').value;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `駅家西FC_精算報告文.txt`;
+            link.click();
+        }
+
+        // 100%真っ白にならず、ダイレクトにPDF保存される完全解決型HTML2PDF処理
+        function exportToPDF() {
+            if (!confirm("精算結果画面をPDFファイルとしてダウンロードしますか？")) return;
+            showToast("PDFファイルを生成中...");
+
+            const tripName = document.getElementById('tripName').value;
+            const tripDateRange = getFormattedDateRange();
+            const totalExtra = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+            // 背景用の完全に独立した純粋HTMLラッパーを作成（フォーム要素を使わないので白抜け・文字欠けが100%防げます）
+            let pdfContainer = document.createElement('div');
+            pdfContainer.style.width = '700px';
+            pdfContainer.style.padding = '20px';
+            pdfContainer.style.backgroundColor = '#ffffff';
+            pdfContainer.style.color = '#000000';
+            pdfContainer.style.fontFamily = "'Noto Sans JP', sans-serif";
+
+            let html = `
+                <div style="border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 12px;">
+                    <h1 style="font-size: 18px; font-weight: bold; color: #0284c7; margin: 0;">駅家西FC 遠征費自動精算報告書</h1>
+                    <p style="font-size: 11px; color: #334155; margin: 4px 0 0 0;">遠征名: ${tripName}（日程: ${tripDateRange}）</p>
+                </div>
+            `;
+
+            if (totalExtra > 0) {
+                html += `
+                    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 12px; font-size: 10px;">
+                        <strong>【現地追加経費 内訳（選手割り勘）】</strong><br>
+                        ${extraExpenses.map(exp => exp.name ? `・${exp.name}: ${Number(exp.amount).toLocaleString()}円` : '').join('<br>')}
+                        <div style="margin-top: 4px; font-weight: bold; color: #0369a1;">合計: ${totalExtra.toLocaleString()}円</div>
+                    </div>
+                `;
+            }
+
+            html += `
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 12px;">
+                    <thead>
+                        <tr style="background-color: #0f172a; color: #ffffff;">
+                            <th style="padding: 6px; border: 1px solid #334155; text-align: left;">ご家庭 / 区分</th>
+                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">移動実費</th>
+                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">分担金</th>
+                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">確定宿泊/雑費</th>
+                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">事前集金額</th>
+                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">領収書立替</th>
+                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">最終相殺差額</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            calculatedResults.forEach(res => {
+                const isRefund = res.netAmount < 0;
+                html += `
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; color: #000000;">${res.name} 様 (${res.type})</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.actualTravel.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.seatFee.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.paidAdvance.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.receipt.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; color: ${isRefund ? '#059669' : '#d97706'};">
+                            ${isRefund ? '【返金】' : '【追徴】'} ￥${Math.abs(res.netAmount).toLocaleString()}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+                <p style="font-size: 9px; color: #64748b; text-align: right; margin-top: 8px;">発行日: ${new Date().toLocaleDateString('ja-JP')}</p>
+            `;
+
+            pdfContainer.innerHTML = html;
+
+            const opt = {
+                margin:       [8, 8, 8, 8],
+                filename:     `駅家西FC_精算結果_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // パイプライン実行（DOMに追加せず直でHTMLソースからPDF出力）
+            html2pdf().set(opt).from(pdfContainer).save().then(() => {
+                showToast("PDFのダウンロードが完了しました！");
+            }).catch(err => {
+                showToast("PDF生成に失敗しました。");
+            });
         }
 
         function showToast(message) {
