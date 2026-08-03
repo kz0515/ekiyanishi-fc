@@ -13,8 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- html2pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body {
@@ -74,9 +72,6 @@
                 </button>
                 <button onclick="loadDraftData()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs px-3 py-2.5 rounded-xl transition flex items-center justify-center gap-1 shadow cursor-pointer btn-touch">
                     <i class="fa-solid fa-folder-open text-amber-400"></i> 保存データ読込
-                </button>
-                <button onclick="copyLineText()" class="flex-1 md:flex-none bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
-                    <i class="fa-solid fa-comment-dots text-sm"></i> LINE用文章をコピー
                 </button>
             </div>
         </div>
@@ -379,21 +374,21 @@
                 <textarea id="lineTextOutput" rows="9" readonly class="w-full bg-slate-950 text-slate-200 border border-slate-800 rounded-lg p-2.5 text-xs font-mono leading-relaxed focus:outline-none"></textarea>
             </div>
 
-            <!-- ★ スマホ・PC完全共通 ファイル作成ボタンエリア -->
+            <!-- ★ スマホ・PCダイレクトファイル保存エリア -->
             <div class="mt-4 pt-3 border-t border-slate-700/80">
-                <label class="block text-xs font-bold text-slate-400 mb-2">
-                    <i class="fa-solid fa-download"></i> ファイルをダウンロード保存
+                <label class="block text-xs font-bold text-slate-300 mb-2">
+                    <i class="fa-solid fa-download text-emerald-400"></i> 精算結果ファイルをダウンロード保存
                 </label>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <button onclick="downloadCSVDirect()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
-                        <i class="fa-solid fa-file-csv text-emerald-400"></i> CSVファイルを保存 (Excel用)
-                    </button>
-                    <button onclick="downloadTextDirect()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
-                        <i class="fa-solid fa-file-lines text-sky-300"></i> テキストファイルを保存
-                    </button>
-                    <button onclick="downloadPDFDirect()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
-                        <i class="fa-solid fa-file-pdf text-amber-400"></i> PDFファイルを保存 (A4精算書)
-                    </button>
+                    <a id="btnCsvDownload" download="駅家西FC_精算結果.csv" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                        <i class="fa-solid fa-file-csv"></i> CSVファイルを保存 (Excel用)
+                    </a>
+                    <a id="btnTxtDownload" download="駅家西FC_精算報告文.txt" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                        <i class="fa-solid fa-file-lines"></i> テキストファイルを保存
+                    </a>
+                    <a id="btnPdfDownload" download="駅家西FC_精算報告書.html" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                        <i class="fa-solid fa-file-pdf"></i> 精算報告書(A4保存用)を保存
+                    </a>
                 </div>
             </div>
 
@@ -494,7 +489,7 @@
                 { id: 133, name: "芝内", relation: "parent2", carId: 5, hotelFee: 4500, paidAdvance: 0 }
             ];
             updateRoster();
-            showToast("新居浜サンプルデータをセットしました");
+            alert("新居浜サンプルデータをセットしました");
         }
 
         function clearRosterText() {
@@ -502,7 +497,7 @@
             document.getElementById('playerRosterInput').value = '';
             document.getElementById('adultRosterInput').value = '';
             updateRoster();
-            showToast("名簿テキストを消去しました");
+            alert("名簿テキストを消去しました");
         }
 
         function updateRoster() {
@@ -569,7 +564,7 @@
                 extraExpenses: extraExpenses
             };
             localStorage.setItem('ekiyanishi_fc_draft', JSON.stringify(data));
-            showToast("途中の入力状態を保存しました！");
+            alert("途中の入力状態を保存しました！");
         }
 
         function loadDraftData() {
@@ -593,7 +588,7 @@
                 extraExpenses = data.extraExpenses || [];
 
                 updateRoster();
-                showToast("保存していたデータを復元しました！");
+                alert("保存していたデータを復元しました！");
             } catch(e) {
                 alert("データの復元に失敗しました。");
             }
@@ -668,7 +663,6 @@
             riders = [...newRidersList, ...extraRiders];
             calculate();
             closePlayerCheckModal();
-            showToast(`反映しました！`);
         }
 
         function toggleAccommodation() {
@@ -689,7 +683,6 @@
                 paidAdvance: 0
             });
             calculate();
-            showToast("行を追加しました");
         }
 
         function onRelationChange(index, value) {
@@ -700,11 +693,76 @@
             calculate();
         }
 
+        // 配車操作関数
+        function addCar() {
+            cars.push({ id: Date.now(), driverName: "", isEquipment: false, isSoloCoach: false, toll: 0, gas: 0 });
+            calculate();
+        }
+
+        function clearSingleCarRow(index) {
+            cars[index].driverName = "";
+            cars[index].isEquipment = false;
+            cars[index].isSoloCoach = false;
+            cars[index].toll = 0;
+            cars[index].gas = 0;
+            calculate();
+        }
+
+        function removeCar(index) {
+            cars.splice(index, 1);
+            calculate();
+        }
+
+        function clearAllCarFullData() {
+            if (!confirm("配車データを一括クリアしますか？")) return;
+            cars.forEach(c => {
+                c.driverName = "";
+                c.isEquipment = false;
+                c.isSoloCoach = false;
+                c.toll = 0;
+                c.gas = 0;
+            });
+            calculate();
+        }
+
+        function removeAllCars() {
+            if (!confirm("車両の行をすべて削除しますか？")) return;
+            cars = [];
+            calculate();
+        }
+
+        // 乗車同乗者操作関数
+        function addRider() {
+            const defaultCarId = cars.length > 0 ? cars[0].id : "";
+            riders.push({ id: Date.now(), name: "", relation: "child", carId: defaultCarId, hotelFee: 0, paidAdvance: 0 });
+            calculate();
+        }
+
+        function clearSingleRiderRow(index) {
+            riders[index].name = "";
+            riders[index].relation = "child";
+            riders[index].carId = "";
+            riders[index].hotelFee = 0;
+            riders[index].paidAdvance = 0;
+            calculate();
+        }
+
+        function removeRider(index) {
+            riders.splice(index, 1);
+            calculate();
+        }
+
+        function removeAllRiders() {
+            if (!confirm("同乗者の行をすべて削除しますか？")) return;
+            riders = [];
+            calculate();
+        }
+
+        // 列一括クリア・コピー機能
         function clearColumnCars() {
             if (!confirm("すべての乗車車両指定を一括解除しますか？")) return;
             riders.forEach(r => r.carId = "");
             calculate();
-            showToast("すべての乗車車両指定を一括解除しました");
         }
 
         function copyFirstHotelFeeToAll() {
@@ -718,21 +776,18 @@
                 }
             });
             calculate();
-            showToast(`1行目の宿泊費(￥${firstFee.toLocaleString()})を全員にコピーしました！`);
         }
 
         function clearColumnHotelFee() {
             if (!confirm("すべての確定宿泊費を0にクリアしますか？")) return;
             riders.forEach(r => r.hotelFee = 0);
             calculate();
-            showToast("すべての確定宿泊費をクリアしました");
         }
 
         function clearColumnPaidAdvance() {
             if (!confirm("すべての事前集金額を0にクリアしますか？")) return;
             riders.forEach(r => r.paidAdvance = 0);
             calculate();
-            showToast("すべての事前集金額をクリアしました");
         }
 
         function renderInputs() {
@@ -859,72 +914,6 @@
             }).join('');
 
             toggleAccommodation();
-        }
-
-        function addCar() {
-            cars.push({ id: Date.now(), driverName: "", isEquipment: false, isSoloCoach: false, toll: 0, gas: 0 });
-            calculate();
-        }
-
-        function clearSingleCarRow(index) {
-            cars[index].driverName = "";
-            cars[index].isEquipment = false;
-            cars[index].isSoloCoach = false;
-            cars[index].toll = 0;
-            cars[index].gas = 0;
-            calculate();
-        }
-
-        function removeCar(index) {
-            cars.splice(index, 1);
-            calculate();
-        }
-
-        function clearAllCarFullData() {
-            if (!confirm("配車データを一括クリアしますか？")) return;
-            cars.forEach(c => {
-                c.driverName = "";
-                c.isEquipment = false;
-                c.isSoloCoach = false;
-                c.toll = 0;
-                c.gas = 0;
-            });
-            calculate();
-            showToast("配車データを一括クリアしました");
-        }
-
-        function removeAllCars() {
-            if (!confirm("車両の行をすべて削除しますか？")) return;
-            cars = [];
-            calculate();
-            showToast("車両の行を削除しました");
-        }
-
-        function addRider() {
-            const defaultCarId = cars.length > 0 ? cars[0].id : "";
-            riders.push({ id: Date.now(), name: "", relation: "child", carId: defaultCarId, hotelFee: 0, paidAdvance: 0 });
-            calculate();
-        }
-
-        function clearSingleRiderRow(index) {
-            riders[index].name = "";
-            riders[index].relation = "child";
-            riders[index].carId = "";
-            riders[index].hotelFee = 0;
-            riders[index].paidAdvance = 0;
-            calculate();
-        }
-
-        function removeRider(index) {
-            riders.splice(index, 1);
-            calculate();
-        }
-
-        function removeAllRiders() {
-            if (!confirm("同乗者の行をすべて削除しますか？")) return;
-            riders = [];
-            calculate();
-            showToast("同乗者の行を削除しました");
         }
 
         function getCompensation(hostedCount, isEquipment) {
@@ -1105,6 +1094,7 @@
             }).join('');
 
             generateLineText();
+            updateDataUriLinks();
         }
 
         function getFormattedDateRange() {
@@ -1162,157 +1152,36 @@
             
             try {
                 document.execCommand('copy');
-                showToast("LINE報告用文章をコピーしました！");
+                alert("LINE報告用文章をコピーしました！");
             } catch (err) {
-                showToast("コピーに失敗しました。");
+                alert("コピーに失敗しました。");
             }
         }
 
-        // 📱/💻 iPhone・Android・PC 全環境共通「完全直接ダウンロード発火」関数
-        function triggerDirectDownload(blob, filename) {
-            const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename;
-            link.style.display = 'none';
-            
-            document.body.appendChild(link);
-            link.click();
-            
-            setTimeout(() => {
-                document.body.removeChild(link);
-                URL.revokeObjectURL(blobUrl);
-            }, 1000);
-            
-            showToast(`${filename} を直接ダウンロードしました！`);
-        }
-
-        // 1. CSV直接ダウンロード
-        function downloadCSVDirect() {
-            let csvStr = "\uFEFFご家庭/区分,移動費実費,移動費分担金,車両補填/手当,確定宿泊費・雑費,事前集金受領額,交通費領収書,最終相殺差額\n";
-            calculatedResults.forEach(res => {
-                const isRefund = res.netAmount < 0;
-                const status = isRefund ? `返金:${Math.abs(res.netAmount)}` : `追徴:${res.netAmount}`;
-                csvStr += `"${res.name} (${res.type})",${res.actualTravel},${res.seatFee},${res.compensation},${res.hotelFee + res.extraExpense},${res.paidAdvance},${res.receipt},"${status}"\n`;
-            });
-
-            const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
-            const filename = `駅家西FC_精算結果_${new Date().toISOString().slice(0,10)}.csv`;
-            triggerDirectDownload(blob, filename);
-        }
-
-        // 2. TXT直接ダウンロード
-        function downloadTextDirect() {
-            const reportText = document.getElementById('lineTextOutput').value;
-            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8;' });
-            const filename = `駅家西FC_精算報告文_${new Date().toISOString().slice(0,10)}.txt`;
-            triggerDirectDownload(blob, filename);
-        }
-
-        // 3. PDF直接ダウンロード
-        function downloadPDFDirect() {
-            showToast("PDFファイルを生成中...");
-
+        // スマホブロックを回避するData URIリンク動的設定
+        function updateDataUriLinks() {
             const tripName = document.getElementById('tripName').value;
             const tripDateRange = getFormattedDateRange();
-            const totalExtra = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
-            let pdfContainer = document.createElement('div');
-            pdfContainer.style.width = '700px';
-            pdfContainer.style.padding = '20px';
-            pdfContainer.style.backgroundColor = '#ffffff';
-            pdfContainer.style.color = '#000000';
-            pdfContainer.style.fontFamily = "'Noto Sans JP', sans-serif";
+            let csvStr = "\uFEFFご家庭/区分,移動費実費,移動費分担金,車両補填/手当,確定宿泊費・雑費,事前集金受領額,交通費領収書,最終相殺差額\n";
+            calculatedResults.forEach(res => {
+                const status = res.netAmount < 0 ? `返金:${Math.abs(res.netAmount)}` : `追徴:${res.netAmount}`;
+                csvStr += `"${res.name} (${res.type})",${res.actualTravel},${res.seatFee},${res.compensation},${res.hotelFee + res.extraExpense},${res.paidAdvance},${res.receipt},"${status}"\n`;
+            });
+            document.getElementById('btnCsvDownload').href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvStr);
 
-            let html = `
-                <div style="border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 12px;">
-                    <h1 style="font-size: 18px; font-weight: bold; color: #0284c7; margin: 0;">駅家西FC 遠征費自動精算報告書</h1>
-                    <p style="font-size: 11px; color: #334155; margin: 4px 0 0 0;">遠征名: ${tripName}（日程: ${tripDateRange}）</p>
-                </div>
-            `;
+            const reportText = document.getElementById('lineTextOutput').value;
+            document.getElementById('btnTxtDownload').href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportText);
 
-            if (totalExtra > 0) {
-                html += `
-                    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 12px; font-size: 10px;">
-                        <strong>【現地追加経費 内訳（選手割り勘）】</strong><br>
-                        ${extraExpenses.map(exp => exp.name ? `・${exp.name}: ${Number(exp.amount).toLocaleString()}円` : '').join('<br>')}
-                        <div style="margin-top: 4px; font-weight: bold; color: #0369a1;">合計: ${totalExtra.toLocaleString()}円</div>
-                    </div>
-                `;
-            }
-
-            html += `
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 12px;">
-                    <thead>
-                        <tr style="background-color: #0f172a; color: #ffffff;">
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: left;">ご家庭 / 区分</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">移動実費</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">分担金</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">確定宿泊/雑費</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">事前集金額</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">領収書立替</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">最終相殺差額</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
+            let htmlReport = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>駅家西FC精算報告書</title></head><body style="font-family:sans-serif;padding:20px;">`;
+            htmlReport += `<h2 style="color:#0284c7;">駅家西FC 遠征費自動精算報告書</h2><p>遠征名: ${tripName}（日程: ${tripDateRange}）</p>`;
+            htmlReport += `<table border="1" cellspacing="0" cellpadding="5" style="width:100%;font-size:12px;"><thead><tr style="background:#0f172a;color:#fff;"><th>ご家庭/区分</th><th>移動実費</th><th>分担金</th><th>確定宿泊/雑費</th><th>事前集金額</th><th>領収書立替</th><th>最終相殺差額</th></tr></thead><tbody>`;
             calculatedResults.forEach(res => {
                 const isRefund = res.netAmount < 0;
-                html += `
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; color: #000000;">${res.name} 様 (${res.type})</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.actualTravel.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.seatFee.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.paidAdvance.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.receipt.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; color: ${isRefund ? '#059669' : '#d97706'};">
-                            ${isRefund ? '【返金】' : '【追徴】'} ￥${Math.abs(res.netAmount).toLocaleString()}
-                        </td>
-                    </tr>
-                `;
+                htmlReport += `<tr><td><b>${res.name} 様 (${res.type})</b></td><td align="right">￥${res.actualTravel.toLocaleString()}</td><td align="right">￥${res.seatFee.toLocaleString()}</td><td align="right">￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td><td align="right">￥${res.paidAdvance.toLocaleString()}</td><td align="right">￥${res.receipt.toLocaleString()}</td><td align="right" style="font-weight:bold;color:${isRefund ? '#059669' : '#d97706'};">${isRefund ? '【返金】' : '【追徴】'} ￥${Math.abs(res.netAmount).toLocaleString()}</td></tr>`;
             });
-
-            html += `
-                    </tbody>
-                </table>
-                <p style="font-size: 9px; color: #64748b; text-align: right; margin-top: 8px;">発行日: ${new Date().toLocaleDateString('ja-JP')} ／ 駅家西FC 会計</p>
-            `;
-
-            pdfContainer.innerHTML = html;
-
-            const filename = `駅家西FC_精算結果_${new Date().toISOString().slice(0,10)}.pdf`;
-            const opt = {
-                margin:       [8, 8, 8, 8],
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(pdfContainer).output('blob').then((pdfBlob) => {
-                triggerDirectDownload(pdfBlob, filename);
-            }).catch(err => {
-                showToast("PDF作成に失敗しました。");
-            });
-        }
-
-        function showToast(message) {
-            let toast = document.getElementById('customToast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'customToast';
-                toast.className = 'fixed bottom-5 right-5 bg-emerald-600 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 z-50 flex items-center gap-2 border border-emerald-400/30';
-                document.body.appendChild(toast);
-            }
-            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-200 text-sm"></i> ${message}`;
-            toast.classList.remove('translate-y-10', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-10', 'opacity-0');
-            }, 3000);
+            htmlReport += `</tbody></table></body></html>`;
+            document.getElementById('btnPdfDownload').href = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlReport);
         }
 
         window.onload = function() {
