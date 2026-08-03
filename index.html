@@ -379,10 +379,10 @@
                 <textarea id="lineTextOutput" rows="9" readonly class="w-full bg-slate-950 text-slate-200 border border-slate-800 rounded-lg p-2.5 text-xs font-mono leading-relaxed focus:outline-none"></textarea>
             </div>
 
-            <!-- ★ スマホ・PC完全対応 ファイル直接保存エリア -->
+            <!-- ★ ファイル直接保存エリア -->
             <div class="mt-4 pt-3 border-t border-slate-700/80">
                 <label class="block text-xs font-bold text-slate-400 mb-2">
-                    <i class="fa-solid fa-download"></i> ファイルをダウンロードフォルダへ直接保存
+                    <i class="fa-solid fa-download"></i> ファイルをダウンロード保存
                 </label>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button onclick="downloadFileUniversal('csv')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
@@ -392,7 +392,7 @@
                         <i class="fa-solid fa-file-lines text-sky-300"></i> テキストファイルを保存
                     </button>
                     <button onclick="downloadPDFDirectly()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
-                        <i class="fa-solid fa-file-pdf text-amber-400"></i> PDFファイルを保存 (A4精算書)
+                        <i class="fa-solid fa-file-pdf text-amber-400"></i> PDFファイルを直接保存 (A4精算書)
                     </button>
                 </div>
             </div>
@@ -1168,25 +1168,8 @@
             }
         }
 
-        // 📱/💻 端末の「ダウンロード」フォルダへ直接ファイル化して保存させるユニバーサル関数
-        async function saveBlobFileDirectly(blob, filename) {
-            const file = new File([blob], filename, { type: blob.type });
-
-            // スマホ（iPhone / Android）でWeb Share APIが利用できる場合はOSの標準保存画面を起動
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        files: [file],
-                        title: filename
-                    });
-                    showToast("ファイルをダウンロード・共有保存しました！");
-                    return;
-                } catch (err) {
-                    if (err.name === 'AbortError') return;
-                }
-            }
-
-            // PCブラウザまたはWebShare非対応環境：Blob URLから自動ダウンロードリンクを実行
+        // 共有画面を出さずに直接ダウンロードフォルダへ保存させる共通関数
+        function forceDownloadDirect(blob, filename) {
             const blobUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = blobUrl;
@@ -1195,28 +1178,28 @@
             a.click();
             document.body.removeChild(a);
             setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-            showToast("ファイルをダウンロードフォルダに保存しました！");
+            showToast("ファイルを直接保存しました！");
         }
 
-        // CSV & テキストファイル直接作成・ダウンロード
+        // CSV & テキストファイル保存
         function downloadFileUniversal(type) {
             if (type === 'csv') {
-                let csvStr = "\uFEFFご家庭/区分,移動費実費,移動費分担金,車両補添/手当,確定宿泊費・雑費,事前集金受領額,交通費領収書,最終相殺差額\n";
+                let csvStr = "\uFEFFご家庭/区分,移動費実費,移動費分担金,車両補填/手当,確定宿泊費・雑費,事前集金受領額,交通費領収書,最終相殺差額\n";
                 calculatedResults.forEach(res => {
                     const isRefund = res.netAmount < 0;
                     const status = isRefund ? `返金:${Math.abs(res.netAmount)}` : `追徴:${res.netAmount}`;
                     csvStr += `"${res.name} (${res.type})",${res.actualTravel},${res.seatFee},${res.compensation},${res.hotelFee + res.extraExpense},${res.paidAdvance},${res.receipt},"${status}"\n`;
                 });
                 const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
-                saveBlobFileDirectly(blob, `駅家西FC_精算結果_${new Date().toISOString().slice(0,10)}.csv`);
+                forceDownloadDirect(blob, `駅家西FC_精算結果_${new Date().toISOString().slice(0,10)}.csv`);
             } else if (type === 'txt') {
                 const reportText = document.getElementById('lineTextOutput').value;
                 const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8;' });
-                saveBlobFileDirectly(blob, `駅家西FC_精算報告文_${new Date().toISOString().slice(0,10)}.txt`);
+                forceDownloadDirect(blob, `駅家西FC_精算報告文_${new Date().toISOString().slice(0,10)}.txt`);
             }
         }
 
-        // 📱/💻 印刷画面を開かず直接PDFファイルを作成・ダウンロード保存
+        // PDF直接ダウンロード処理（Windows共有ダイアログを完全スキップ）
         function downloadPDFDirectly() {
             showToast("PDFファイルを直接作成中...");
 
@@ -1224,7 +1207,6 @@
             const tripDateRange = getFormattedDateRange();
             const totalExtra = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
-            // クラッシュや印刷ダイアログのポップアップを回避する白地独立レイアウト
             let pdfContainer = document.createElement('div');
             pdfContainer.style.width = '700px';
             pdfContainer.style.padding = '20px';
@@ -1299,9 +1281,9 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 画面や印刷画面を開かず、バックグラウンドでPDFのBlobデータを直接生成
+            // 共有ダイアログをスキップして直接Blobダウンロード実行
             html2pdf().set(opt).from(pdfContainer).output('blob').then((pdfBlob) => {
-                saveBlobFileDirectly(pdfBlob, filename);
+                forceDownloadDirect(pdfBlob, filename);
             }).catch(err => {
                 showToast("PDF作成に失敗しました。");
             });
