@@ -13,8 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- html2pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body {
@@ -403,7 +401,7 @@
                     <span class="block text-[11px] text-amber-300 mb-1 font-bold"><i class="fa-solid fa-mobile-screen-button"></i> iPhone (iOS Safari) の場合:</span>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <button onclick="sharePdfForIPhone()" class="bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs py-3 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow cursor-pointer btn-touch">
-                            <i class="fa-solid fa-file-pdf text-sm"></i> PDF報告書を保存・共有（iPhone用）
+                            <i class="fa-solid fa-file-pdf text-sm"></i> A4報告画面を開く（印刷/PDF共有・保存）
                         </button>
                         <button onclick="shareCsvForIPhone()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-3 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow cursor-pointer btn-touch">
                             <i class="fa-solid fa-file-csv text-sm"></i> CSVデータを保存・共有（iPhone用）
@@ -415,9 +413,6 @@
         </div>
 
     </div>
-
-    <!-- PDFレンダリング用の隠しDOMコンテナ -->
-    <div id="pdfHiddenRenderArea" style="position: absolute; left: -9999px; top: -9999px; width: 700px; background: #ffffff; color: #000000; padding: 20px; font-family: 'Noto Sans JP', sans-serif;"></div>
 
     <script>
         let playerRoster = [
@@ -1279,96 +1274,96 @@
             }
         }
 
-        // 📱 3. iPhone (iOS Safari) 専用 PDF作成・共有関数（重複ファイル修正版）
-        async function sharePdfForIPhone() {
+        // 📱 3. iPhone (iOS Safari) 専用 A4精算書表示＆印刷・保存ダイアログ起動
+        function sharePdfForIPhone() {
             const tripName = document.getElementById('tripName').value;
             const tripDateRange = getFormattedDateRange();
             const totalExtra = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
-            const pdfContainer = document.getElementById('pdfHiddenRenderArea');
-
             let tableRows = calculatedResults.map(res => {
                 const isRefund = res.netAmount < 0;
                 return `
-                    <tr style="border-bottom: 1px solid #cbd5e1;">
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; text-align: left; color: #000000;">${res.name} 様 (${res.type})</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.actualTravel.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.seatFee.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.paidAdvance.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.receipt.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; color: ${isRefund ? '#059669' : '#d97706'};">
+                    <tr>
+                        <td class="l">${res.name} 様 (${res.type})</td>
+                        <td>￥${res.actualTravel.toLocaleString()}</td>
+                        <td>￥${res.seatFee.toLocaleString()}</td>
+                        <td>￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td>
+                        <td>￥${res.paidAdvance.toLocaleString()}</td>
+                        <td>￥${res.receipt.toLocaleString()}</td>
+                        <td class="${isRefund ? 'rf' : 'cl'}">
                             ${isRefund ? '【返金】' : '【追徴】'} ￥${Math.abs(res.netAmount).toLocaleString()}
                         </td>
                     </tr>
                 `;
             }).join('');
 
-            let htmlReport = `
-                <div style="border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 12px;">
-                    <h1 style="font-size: 18px; font-weight: bold; color: #0284c7; margin: 0;">駅家西FC 遠征費自動精算報告書</h1>
-                    <p style="font-size: 11px; color: #334155; margin: 4px 0 0 0;">遠征名: ${tripName}（日程: ${tripDateRange}）</p>
-                </div>
-            `;
-
+            let extraBoxHtml = '';
             if (totalExtra > 0) {
-                htmlReport += `
-                    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 12px; font-size: 10px;">
+                let itemsList = extraExpenses.map(exp => exp.name ? `・${exp.name}: ${Number(exp.amount).toLocaleString()}円` : '').join('<br>');
+                extraBoxHtml = `
+                    <div class="box">
                         <strong>【現地追加経費 内訳（選手割り勘）】</strong><br>
-                        ${extraExpenses.map(exp => exp.name ? `・${exp.name}: ${Number(exp.amount).toLocaleString()}円` : '').join('<br>')}
-                        <div style="margin-top: 4px; font-weight: bold; color: #0369a1;">合計: ${totalExtra.toLocaleString()}円</div>
+                        ${itemsList}
+                        <div style="margin-top:4px; font-weight:bold; color:#0369a1;">合計: ${totalExtra.toLocaleString()}円</div>
                     </div>
                 `;
             }
 
-            htmlReport += `
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 12px;">
-                    <thead>
-                        <tr style="background-color: #0f172a; color: #ffffff;">
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: left;">ご家庭 / 区分</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">移動実費</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">分担金</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">確定宿泊/雑費</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">事前集金額</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">領収書立替</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">最終相殺差額</th>
-                        </tr>
-                    </thead>
-                    <tbody>${tableRows}</tbody>
-                </table>
-                <p style="font-size: 9px; color: #64748b; text-align: right; margin-top: 8px;">発行日: ${new Date().toLocaleDateString('ja-JP')} ／ 駅家西FC 会計</p>
-            `;
+            let fullHtml = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【駅家西FC】精算報告書</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 15px; background: #fff; color: #000; font-size: 11px; line-height: 1.5; }
+        .h { border-bottom: 2px solid #0284c7; padding-bottom: 6px; margin-bottom: 10px; }
+        .h h1 { font-size: 16px; color: #0284c7; margin:0; }
+        .box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; margin-bottom: 10px; border-radius: 4px; font-size: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10px; }
+        th { background: #0f172a; color: #fff; border: 1px solid #334155; padding: 6px; text-align: center; }
+        td { border: 1px solid #cbd5e1; padding: 6px; text-align: right; color: #000; }
+        td.l { text-align: left; font-weight: bold; }
+        .rf { color: #059669; font-weight: bold; }
+        .cl { color: #d97706; font-weight: bold; }
+        .btn-print { background: #0284c7; color: #fff; border: none; padding: 10px 16px; font-weight: bold; font-size: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; cursor: pointer; }
+        @media print { .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print();">🖨️ この報告書を共有・PDF保存する</button>
+    <div class="h">
+        <h1>駅家西FC 遠征費自動精算報告書</h1>
+        <p style="margin:2px 0; color:#475569;">遠征名: ${tripName} （日程: ${tripDateRange}）</p>
+    </div>
+    ${extraBoxHtml}
+    <table>
+        <thead>
+            <tr>
+                <th>ご家庭 / 区分</th>
+                <th>移動実費</th>
+                <th>分担金</th>
+                <th>確定宿泊/雑費</th>
+                <th>事前集金額</th>
+                <th>領収書立替</th>
+                <th>最終相殺差額</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${tableRows}
+        </tbody>
+    </table>
+    <p style="text-align:right; font-size:9px; color:#64748b; margin-top:10px;">発行日: ${new Date().toLocaleDateString('ja-JP')} ／ 駅家西FC 会計</p>
+</body>
+</html>`;
 
-            pdfContainer.innerHTML = htmlReport;
-
-            const opt = {
-                margin:       [8, 8, 8, 8],
-                filename:     `駅家西FC_精算報告書.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowWidth: 750 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            try {
-                // PDF出力
-                const pdfWorker = html2pdf().set(opt).from(pdfContainer);
-                const pdfBlob = await pdfWorker.output('blob');
-                const file = new File([pdfBlob], `駅家西FC_精算報告書.pdf`, { type: 'application/pdf' });
-
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    // 単一のファイルのみ共有に渡し、自動テキスト出力を防ぐ
-                    await navigator.share({
-                        files: [file]
-                    });
-                } else {
-                    alert("お使いの環境ではPDF共有機能が使えません。");
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    alert("PDFの生成・共有に失敗しました。");
-                }
-            } finally {
-                pdfContainer.innerHTML = '';
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.open();
+                win.document.write(fullHtml);
+                win.document.close();
+            } else {
+                alert("ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください。");
             }
         }
 
@@ -1384,7 +1379,6 @@
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
-                    // 単一のファイルのみ共有に渡す
                     await navigator.share({
                         files: [file]
                     });
