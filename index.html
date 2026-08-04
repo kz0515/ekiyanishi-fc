@@ -385,9 +385,12 @@
                 <!-- 💻 PC・Android用ボタン -->
                 <div class="mb-2">
                     <span class="block text-[11px] text-slate-400 mb-1 font-bold"><i class="fa-solid fa-desktop"></i> PC・Android端末の場合:</span>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button onclick="downloadTextForPC()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                            <i class="fa-solid fa-file-lines"></i> 報告用テキストを保存（Android/PC）
+                        </button>
                         <button onclick="downloadCSVForPC()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
-                            <i class="fa-solid fa-file-csv"></i> CSVファイルを直接保存 (Excel用)
+                            <i class="fa-solid fa-file-csv"></i> CSVファイルを直接保存 (Excel要)
                         </button>
                         <button onclick="openReportWindowForPC()" class="bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
                             <i class="fa-solid fa-file-pdf"></i> 精算報告書(A4画面)を開く
@@ -412,6 +415,9 @@
         </div>
 
     </div>
+
+    <!-- PDFレンダリング用の隠しDOMコンテナ -->
+    <div id="pdfHiddenRenderArea" style="position: absolute; left: -9999px; top: -9999px; width: 700px; background: #ffffff; color: #000000; padding: 20px; font-family: 'Noto Sans JP', sans-serif;"></div>
 
     <script>
         let playerRoster = [
@@ -1171,6 +1177,20 @@
             }
         }
 
+        // 💻 0. Android / PC用 報告用テキスト(.txt)直接ダウンロード関数
+        function downloadTextForPC() {
+            const reportText = document.getElementById('lineTextOutput').value;
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `駅家西FC_精算報告文_${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+
         // 💻 1. PC・Android用 CSV直接ダウンロード関数
         function downloadCSVForPC() {
             let csvStr = "\uFEFFご家庭/区分,移動費実費,移動費分担金,車両補填/手当,確定宿泊費・雑費,事前集金受領額,交通費領収書,最終相殺差額\n";
@@ -1259,29 +1279,24 @@
             }
         }
 
-        // 📱 3. iPhone (iOS Safari) 専用 PDF作成・共有関数
+        // 📱 3. iPhone (iOS Safari) 専用 PDF作成・共有関数（重複ファイル修正版）
         async function sharePdfForIPhone() {
             const tripName = document.getElementById('tripName').value;
             const tripDateRange = getFormattedDateRange();
             const totalExtra = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
-            let pdfContainer = document.createElement('div');
-            pdfContainer.style.width = '700px';
-            pdfContainer.style.padding = '20px';
-            pdfContainer.style.backgroundColor = '#ffffff';
-            pdfContainer.style.color = '#000000';
-            pdfContainer.style.fontFamily = "'Noto Sans JP', sans-serif";
+            const pdfContainer = document.getElementById('pdfHiddenRenderArea');
 
             let tableRows = calculatedResults.map(res => {
                 const isRefund = res.netAmount < 0;
                 return `
                     <tr style="border-bottom: 1px solid #cbd5e1;">
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; text-align: left;">${res.name} 様 (${res.type})</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">￥${res.actualTravel.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">￥${res.seatFee.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">￥${res.paidAdvance.toLocaleString()}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">￥${res.receipt.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; text-align: left; color: #000000;">${res.name} 様 (${res.type})</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.actualTravel.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.seatFee.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${(res.hotelFee + res.extraExpense).toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.paidAdvance.toLocaleString()}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #000000;">￥${res.receipt.toLocaleString()}</td>
                         <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; color: ${isRefund ? '#059669' : '#d97706'};">
                             ${isRefund ? '【返金】' : '【追徴】'} ￥${Math.abs(res.netAmount).toLocaleString()}
                         </td>
@@ -1330,19 +1345,20 @@
                 margin:       [8, 8, 8, 8],
                 filename:     `駅家西FC_精算報告書.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowWidth: 750 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             try {
-                // PDF生成後Blobを取得してファイル化
-                const pdfBlob = await html2pdf().set(opt).from(pdfContainer).output('blob');
+                // PDF出力
+                const pdfWorker = html2pdf().set(opt).from(pdfContainer);
+                const pdfBlob = await pdfWorker.output('blob');
                 const file = new File([pdfBlob], `駅家西FC_精算報告書.pdf`, { type: 'application/pdf' });
 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    // 単一のファイルのみ共有に渡し、自動テキスト出力を防ぐ
                     await navigator.share({
-                        files: [file],
-                        title: `駅家西FC精算報告書 - ${tripName}`
+                        files: [file]
                     });
                 } else {
                     alert("お使いの環境ではPDF共有機能が使えません。");
@@ -1351,13 +1367,13 @@
                 if (err.name !== 'AbortError') {
                     alert("PDFの生成・共有に失敗しました。");
                 }
+            } finally {
+                pdfContainer.innerHTML = '';
             }
         }
 
-        // 📱 4. iPhone (iOS Safari) 専用 CSV共有関数
+        // 📱 4. iPhone (iOS Safari) 専用 CSV共有関数（重複ファイル修正版）
         async function shareCsvForIPhone() {
-            const tripName = document.getElementById('tripName').value;
-
             let csvStr = "\uFEFFご家庭/区分,移動費実費,移動費分担金,車両補填/手当,確定宿泊費・雑費,事前集金受領額,交通費領収書,最終相殺差額\n";
             calculatedResults.forEach(res => {
                 const status = res.netAmount < 0 ? `返金:${Math.abs(res.netAmount)}` : `追徴:${res.netAmount}`;
@@ -1368,9 +1384,9 @@
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
+                    // 単一のファイルのみ共有に渡す
                     await navigator.share({
-                        files: [file],
-                        title: `駅家西FC精算CSV - ${tripName}`
+                        files: [file]
                     });
                 } catch (err) {
                     if (err.name !== 'AbortError') {
