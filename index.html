@@ -7,16 +7,12 @@
     <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         body {
-            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
@@ -48,26 +44,6 @@
         ::-webkit-scrollbar-thumb {
             background: #475569;
             border-radius: 3px;
-        }
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printModalArea, #printModalArea * {
-                visibility: visible;
-            }
-            #printModalArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: #ffffff !important;
-                color: #000000 !important;
-                padding: 0 !important;
-            }
-            .no-print {
-                display: none !important;
-            }
         }
     </style>
 </head>
@@ -377,7 +353,7 @@
                         <button onclick="downloadCSVForPC()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
                             <i class="fa-solid fa-file-csv"></i> CSVファイルを直接保存 (Excel要)
                         </button>
-                        <button onclick="openPrintModal()" class="bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
+                        <button onclick="openPrintPdfDirectly()" class="bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow cursor-pointer btn-touch">
                             <i class="fa-solid fa-file-pdf"></i> 精算報告書(A4画面)を開く
                         </button>
                     </div>
@@ -387,7 +363,7 @@
                 <div class="pt-2 border-t border-slate-800">
                     <span class="block text-[11px] text-amber-300 mb-1 font-bold"><i class="fa-solid fa-mobile-screen-button"></i> iPhone (iOS Safari) の場合:</span>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button onclick="openPrintModal()" class="bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs py-3 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow cursor-pointer btn-touch">
+                        <button onclick="openPrintPdfDirectly()" class="bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs py-3 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow cursor-pointer btn-touch">
                             <i class="fa-solid fa-file-pdf text-sm"></i> A4報告画面を開く（印刷/PDF共有・保存）
                         </button>
                         <button onclick="shareCsvForIPhone()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-3 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow cursor-pointer btn-touch">
@@ -399,22 +375,6 @@
 
         </div>
 
-    </div>
-
-    <!-- 📱 iPhoneポップアップブロックを100%回避するイン画面A4モーダル -->
-    <div id="printModalArea" class="hidden fixed inset-0 bg-slate-950/95 z-50 overflow-y-auto p-2 sm:p-5">
-        <div class="max-w-3xl mx-auto bg-white text-slate-900 p-4 sm:p-8 rounded-xl shadow-2xl border border-slate-200">
-            <div class="no-print flex justify-between items-center border-b pb-3 mb-4 gap-2">
-                <button onclick="triggerIPhonePrint()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow cursor-pointer btn-touch">
-                    <i class="fa-solid fa-print"></i> 🖨️ PDF保存・共有メニューを開く
-                </button>
-                <button onclick="closePrintModal()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg cursor-pointer btn-touch">
-                    ✕ 閉じる
-                </button>
-            </div>
-            
-            <div id="printModalContent"></div>
-        </div>
     </div>
 
     <script>
@@ -891,8 +851,8 @@
             setTimeout(() => URL.revokeObjectURL(url), 2000);
         }
 
-        // 📱 iPhoneポップアップ遮断回避型 イン画面A4報告表示関数
-        function openPrintModal() {
+        // 📱 iPhoneポップアップブロックを100%回避する直接PDF化関数
+        function openPrintPdfDirectly() {
             const tripName = document.getElementById('tripName').value;
             const tripDateRange = getFormattedDateRange();
             const totalExtra = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
@@ -926,41 +886,59 @@
                 `;
             }
 
-            let htmlReport = `
-                <div style="border-bottom: 2px solid #0284c7; padding-bottom: 6px; margin-bottom: 10px;">
-                    <h1 style="font-size: 16px; font-weight: bold; color: #0284c7; margin: 0;">駅家西FC 遠征費自動精算報告書</h1>
-                    <p style="margin:2px 0; color:#475569; font-size: 11px;">遠征名: ${tripName} （日程: ${tripDateRange}）</p>
-                </div>
-                ${extraBoxHtml}
-                <table style="width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10px;">
-                    <thead>
-                        <tr style="background-color: #0f172a; color: #ffffff;">
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: left;">ご家庭 / 区分</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">移動実費</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">分担金</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">確定宿泊/雑費</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">事前集金額</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">領収書立替</th>
-                            <th style="padding: 6px; border: 1px solid #334155; text-align: right;">最終相殺差額</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
-                <p style="text-align:right; font-size:9px; color:#64748b; margin-top:10px;">発行日: ${new Date().toLocaleDateString('ja-JP')} ／ 駅家西FC 会計</p>
-            `;
+            let fullHtml = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【駅家西FC】精算報告書</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 10px; background: #fff; color: #000; font-size: 10px; line-height: 1.4; }
+        .h { border-bottom: 2px solid #0284c7; padding-bottom: 4px; margin-bottom: 8px; }
+        .h h1 { font-size: 15px; color: #0284c7; margin: 0; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 10px; }
+        th { background: #0f172a; color: #ffffff; border: 1px solid #334155; padding: 5px; text-align: center; }
+        td { border: 1px solid #cbd5e1; padding: 5px; text-align: right; color: #000000; }
+        td.l { text-align: left; font-weight: bold; }
+        .rf { color: #059669; font-weight: bold; }
+        .cl { color: #d97706; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="h">
+        <h1>駅家西FC 遠征費自動精算報告書</h1>
+        <p style="margin:2px 0; color:#475569; font-size: 10px;">遠征名: ${tripName} （日程: ${tripDateRange}）</p>
+    </div>
+    ${extraBoxHtml}
+    <table>
+        <thead>
+            <tr>
+                <th>ご家庭 / 区分</th>
+                <th>移動実費</th>
+                <th>分担金</th>
+                <th>確定宿泊/雑費</th>
+                <th>事前集金額</th>
+                <th>領収書立替</th>
+                <th>最終相殺差額</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${tableRows}
+        </tbody>
+    </table>
+    <p style="text-align:right; font-size:9px; color:#64748b; margin-top:8px;">発行日: ${new Date().toLocaleDateString('ja-JP')} ／ 駅家西FC 会計</p>
+</body>
+</html>`;
 
-            document.getElementById('printModalContent').innerHTML = htmlReport;
-            document.getElementById('printModalArea').classList.remove('hidden');
-        }
+            // iPhoneでのポップアップブロックを完璧に回避
+            document.open();
+            document.write(fullHtml);
+            document.close();
 
-        function closePrintModal() {
-            document.getElementById('printModalArea').classList.add('hidden');
-        }
-
-        function triggerIPhonePrint() {
-            window.print();
+            // 100ms後に自動でiPhoneの標準共有・保存（印刷ダイアログ）を呼び出す
+            setTimeout(function() {
+                window.print();
+            }, 100);
         }
 
         async function shareCsvForIPhone() {
