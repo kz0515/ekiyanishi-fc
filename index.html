@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール Ver.1.0.7</title>
+    <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール Ver.1.0.10</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome icons -->
@@ -55,7 +55,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 mb-4 gap-2">
             <div>
                 <span class="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1">
-                    <i class="fa-solid fa-calculator"></i> 自動精算ツール Ver.1.0.7
+                    <i class="fa-solid fa-calculator"></i> 自動精算ツール Ver.1.0.10
                 </span>
                 <h1 class="text-lg sm:text-2xl font-black text-white tracking-tight">
                     駅家西FC 遠征費自動精算計算ツール
@@ -81,7 +81,7 @@
                 </h2>
                 <div class="flex gap-2">
                     <button onclick="resetSampleRoster()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
-                        <i class="fa-solid fa-rotate-left text-sky-400"></i> 新居浜サンプル読込
+                        <i class="fa-solid fa-rotate-left text-sky-400"></i> 名簿初期データ読込
                     </button>
                     <button onclick="clearRosterText()" class="bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/60 text-xs px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
                         <i class="fa-solid fa-eraser"></i> テキスト消去
@@ -92,11 +92,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                 <div>
                     <label class="block font-semibold text-slate-300 mb-1">【部員名簿】（コンマ区切り）</label>
-                    <textarea id="playerRosterInput" oninput="updateRoster()" rows="2" class="w-full bg-slate-100 border border-slate-300 rounded p-1.5 text-xs focus:ring-2 focus:ring-sky-500 font-medium" placeholder="石井, 土井, 山本..."></textarea>
+                    <textarea id="playerRosterInput" oninput="updateRoster()" rows="3" class="w-full bg-slate-100 border border-slate-300 rounded p-1.5 text-xs focus:ring-2 focus:ring-sky-500 font-medium" placeholder="選手名をカンマ区切りで入力"></textarea>
                 </div>
                 <div>
                     <label class="block font-semibold text-slate-300 mb-1">【指導者・その他名簿】<span class="text-sky-300">（※選手に子どもがいない単独指導者のみ入力）</span></label>
-                    <textarea id="adultRosterInput" oninput="updateRoster()" rows="2" class="w-full bg-slate-100 border border-slate-300 rounded p-1.5 text-xs focus:ring-2 focus:ring-sky-500 font-medium" placeholder="（※子どもがチームにいないコーチのみ入力）"></textarea>
+                    <textarea id="adultRosterInput" oninput="updateRoster()" rows="3" class="w-full bg-slate-100 border border-slate-300 rounded p-1.5 text-xs focus:ring-2 focus:ring-sky-500 font-medium" placeholder="（※子どもがチームにいないコーチのみ入力）"></textarea>
                 </div>
             </div>
         </div>
@@ -110,7 +110,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 text-xs">
                 <div>
                     <label class="block text-slate-300 font-semibold mb-1">遠征名称</label>
-                    <input type="text" id="tripName" value="東広島2日間遠征" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold">
+                    <input type="text" id="tripName" value="" placeholder="例：8月 新居浜遠征" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold">
                 </div>
                 <div>
                     <label class="block text-slate-300 font-semibold mb-1">遠征区分</label>
@@ -187,7 +187,7 @@
                             <th class="p-2 min-w-[140px]">車主（家庭/指導者）</th>
                             <th class="p-2 min-w-[110px] text-center">出車日数（手当倍率）</th>
                             <th class="p-2 text-center min-w-[55px]">荷物車</th>
-                            <th class="p-2 text-center min-w-[80px]">単独指導者<br><span class="text-[9px] font-normal text-sky-300">※立替自腹</span></th>
+                            <th class="p-2 text-center min-w-[80px]">単独指導者<br><span class="text-[9px] font-normal text-sky-300">※全額プール/部費精算</span></th>
                             <th class="p-2 text-right min-w-[100px]">高速代（立替）</th>
                             <th class="p-2 text-right min-w-[100px]">ガソリン代（立替）</th>
                             <th class="p-2 text-center min-w-[65px]">乗車</th>
@@ -379,17 +379,22 @@
     </div>
 
     <script>
-        let playerRoster = ["石井", "土井", "山本", "福田", "高橋", "アチャリヤ", "松尾", "田中", "寺岡", "伊藤", "太枝", "高森", "芝内"];
-        let adultRoster = [];
-        let cars = [
-            { id: 1, driverName: "芝内", carDays: 2, isEquipment: true, isSoloCoach: false, toll: 8000, gas: 5000 },
-            { id: 2, driverName: "福田", carDays: 1, isEquipment: false, isSoloCoach: false, toll: 4000, gas: 2500 },
-            { id: 3, driverName: "福田", carDays: 1, isEquipment: false, isSoloCoach: false, toll: 4000, gas: 2500 },
-            { id: 4, driverName: "高橋", carDays: 2, isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
-            { id: 5, driverName: "芝内", carDays: 2, isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 }
+        // ★ 最新全部員名簿（37名）
+        let playerRoster = [
+            "谷田 悠輔", "土井 一琉", "山本 健悟", "アチャリア ディプソン", "石井 晴翔", 
+            "福田 唯友", "高橋 京芽", "松尾 那心", "田中 律", "寺岡 優貴", 
+            "伊藤 陽菜", "太枝 渚", "高森 双華", "土井 壮琉", "佐藤 翔哉", 
+            "キョウ ジュンシイ", "大内 悠人", "大内 啓人", "内田 晴", "土井 桜雅", 
+            "芝内 岳", "松尾 明央", "寺岡 慶二", "田岡 景大", "妹尾 優輝", 
+            "岡田 翔聖", "青木 優雅", "手越 玄都", "廣本 蒼翔", "松井 蓮生", 
+            "藤代 和颯", "三島 蓮", "青木 波琉", "内田 快", "松井 心来", 
+            "上田 晃輝", "山本 恭路"
         ];
+        
+        let adultRoster = [];
+        let cars = [];
         let riders = [];
-        let extraExpenses = [{ name: "洗濯代", amount: 1200 }, { name: "氷代（2日分）", amount: 800 }];
+        let extraExpenses = [];
 
         try {
             const today = new Date();
@@ -411,40 +416,23 @@
 
         function isSameFamily(personName, driverName) {
             if (!personName || !driverName) return false;
-            let p = String(personName).replace(/コーチ|監督|保護者/g, '').trim();
-            let d = String(driverName).replace(/コーチ|監督|保護者/g, '').trim();
-            return p === d;
+            let p = String(personName).replace(/コーチ|監督|保護者/g, '').replace(/\s+/g, '').trim();
+            let d = String(driverName).replace(/コーチ|監督|保護者/g, '').replace(/\s+/g, '').trim();
+            
+            let pLast = p.split(' ')[0] || p;
+            let dLast = d.split(' ')[0] || d;
+            
+            return p === d || pLast === dLast;
         }
 
         function resetSampleRoster() {
             document.getElementById('playerRosterInput').value = playerRoster.join(', ');
             document.getElementById('adultRosterInput').value = adultRoster.join(', ');
-            riders = [
-                { id: 1, name: "石井", relation: "child", carId: 1, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 11, name: "石井", relation: "parent1", carId: 1, hotelFee: 4800, paidAdvance: 0 },
-                { id: 2, name: "土井", relation: "child", carId: 2, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 21, name: "土井", relation: "parent1", carId: 2, hotelFee: 4800, paidAdvance: 0 },
-                { id: 3, name: "山本", relation: "child", carId: 3, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 31, name: "山本", relation: "parent1", carId: 3, hotelFee: 4800, paidAdvance: 0 },
-                { id: 4, name: "福田", relation: "child", carId: 3, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 5, name: "高橋", relation: "child", carId: 4, hotelFee: 4500, paidAdvance: 11500 },
-                { id: 51, name: "高橋", relation: "parent1", carId: 4, hotelFee: 4800, paidAdvance: 0 },
-                { id: 52, name: "高橋", relation: "parent2", carId: 4, hotelFee: 4800, paidAdvance: 0 },
-                { id: 6, name: "アチャリヤ", relation: "child", carId: 5, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 7, name: "松尾", relation: "child", carId: 1, hotelFee: 4400, paidAdvance: 6600 },
-                { id: 8, name: "田中", relation: "child", carId: 2, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 81, name: "田中", relation: "parent1", carId: 2, hotelFee: 4800, paidAdvance: 0 },
-                { id: 9, name: "寺岡", relation: "child", carId: 3, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 10, name: "伊藤", relation: "child", carId: 4, hotelFee: 4400, paidAdvance: 6600 },
-                { id: 11, name: "太枝", relation: "child", carId: 5, hotelFee: 4500, paidAdvance: 6700 },
-                { id: 12, name: "高森", relation: "child", carId: 1, hotelFee: 4400, paidAdvance: 6600 },
-                { id: 13, name: "芝内", relation: "child", carId: 5, hotelFee: 4500, paidAdvance: 11200 },
-                { id: 131, name: "芝内", relation: "coach", carId: 1, hotelFee: 0, paidAdvance: 4800 },
-                { id: 132, name: "芝内", relation: "parent1", carId: 5, hotelFee: 4500, paidAdvance: 0 },
-                { id: 133, name: "芝内", relation: "parent2", carId: 5, hotelFee: 4500, paidAdvance: 0 }
-            ];
+            cars = [];
+            riders = [];
+            extraExpenses = [];
             updateRoster();
-            showToast("新居浜サンプルデータをセットしました");
+            showToast("部員名簿を初期読み込みしました");
         }
 
         function clearRosterText() {
@@ -478,7 +466,6 @@
             calculate();
         }
 
-        // スマホ縦向きはみ出し防止
         function renderExpenseRows() {
             const container = document.getElementById('expenseContainer');
             container.innerHTML = extraExpenses.map((exp, index) => `
@@ -532,7 +519,7 @@
             const container = document.getElementById('modalPlayerList');
             const currentRiderNames = riders.map(r => r.name);
             container.innerHTML = playerRoster.map((p, idx) => {
-                const isChecked = currentRiderNames.includes(p) || riders.length === 0;
+                const isChecked = currentRiderNames.includes(p);
                 const existingFamilyCount = riders.filter(r => r.name === p && !r.relation.includes('child')).length;
                 return `
                     <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between gap-2">
@@ -559,12 +546,12 @@
             let newRidersList = [];
             selectedPlayers.forEach((p, i) => {
                 let defaultCar = cars[i % cars.length] ? cars[i % cars.length].id : (cars[0] ? cars[0].id : "");
-                newRidersList.push({ id: Date.now() + Math.random(), name: p, relation: "child", carId: defaultCar, hotelFee: 4500, paidAdvance: 6700 });
+                newRidersList.push({ id: Date.now() + Math.random(), name: p, relation: "child", carId: defaultCar, hotelFee: 0, paidAdvance: 0 });
                 const famInput = document.querySelector(`input[data-player="${p}"]`);
                 const famCount = famInput ? Number(famInput.value) || 0 : 0;
                 for (let f = 0; f < famCount; f++) {
                     const isFirstAdult = (f === 0);
-                    newRidersList.push({ id: Date.now() + Math.random(), name: p, relation: isFirstAdult ? "parent1" : "parent2", carId: defaultCar, hotelFee: 4800, paidAdvance: 0 });
+                    newRidersList.push({ id: Date.now() + Math.random(), name: p, relation: isFirstAdult ? "parent1" : "parent2", carId: defaultCar, hotelFee: 0, paidAdvance: 0 });
                 }
             });
             const extraRiders = riders.filter(r => !playerRoster.includes(r.name));
@@ -756,14 +743,15 @@
                     familyMap[fname] = { name: fname + (playerRoster.includes(fname) ? '保護者' : ''), type: car.isEquipment ? "指導者/荷物車" : (car.isSoloCoach ? "単独指導者車" : "配車ドライバー"), actualTravel: 0, seatFee: 0, compensation: 0, hotelFee: 0, extraExpense: 0, paidAdvance: 0, receipt: 0 };
                 }
                 let hostedCount = riders.filter(r => Number(r.carId) === car.id && (!isSameFamily(r.name, car.driverName) || r.relation.includes('child'))).length;
-                let childCount = riders.filter(r => Number(r.carId) === car.id && isSameFamily(r.name, car.driverName) && r.relation.includes('child')).length;
                 
                 let carDaysVal = car.carDays || 1;
                 let baseComp = getCompensationBase(hostedCount, car.isEquipment);
                 let finalComp = baseComp * carDaysVal;
 
                 familyMap[fname].compensation -= finalComp;
-                familyMap[fname].receipt += car.isSoloCoach ? (Number(car.toll) || 0) : ((Number(car.toll) || 0) + (Number(car.gas) || 0));
+                
+                // ★ 単独指導者の立替分も分担金プールから最優先精算（返金）
+                familyMap[fname].receipt += car.isSoloCoach ? ((Number(car.toll) || 0) + (Number(car.gas) || 0)) : ((Number(car.toll) || 0) + (Number(car.gas) || 0));
             });
 
             // Riders
@@ -778,14 +766,12 @@
                 let isParent1 = (rider.relation === 'parent1');
                 let isDriverChild = cars.some(c => isSameFamily(fname, c.driverName) && Number(rider.carId) === c.id);
 
-                // 個別分担金の計算
                 let riderSeatFee = 0;
                 if (rider.relation === 'child') riderSeatFee = 2000;
                 else if (rider.relation === 'child_1day') riderSeatFee = 1000;
                 else if (rider.relation === 'child_none') riderSeatFee = 0;
 
                 if (isChild) {
-                    // 自家送迎（child_none）でない場合は実費を計算
                     if (!isDriverChild && rider.relation !== 'child_none') {
                         familyMap[fname].actualTravel += perPlayerActual;
                     }
