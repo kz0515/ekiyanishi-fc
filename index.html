@@ -7,16 +7,12 @@
     <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         body {
-            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
@@ -141,23 +137,23 @@
             </div>
         </div>
 
-        <!-- Section 2.5: 現地追加経費（スマホで見やすいよう入力欄を大サイズ化） -->
+        <!-- Section 2.5: 現地追加経費（スマホで見やすいよう入力枠と金額部分を大型化） -->
         <div class="bg-slate-800/90 rounded-xl p-3 sm:p-4 mb-4 border border-slate-700/80">
-            <div class="flex flex-wrap justify-between items-center mb-2.5 gap-2">
-                <h2 class="text-xs sm:text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+            <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+                <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
                     <i class="fa-solid fa-receipt"></i>
                     現地追加経費（※洗濯代・氷代等、選手全員で割り勘）
                 </h2>
-                <button type="button" onclick="addExpenseRow()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                <button type="button" onclick="addExpenseRow()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition flex items-center gap-1 cursor-pointer btn-touch shadow">
                     <i class="fa-solid fa-plus"></i> 項目を追加
                 </button>
             </div>
             
-            <div id="expenseContainer" class="space-y-2.5 mb-2.5"></div>
+            <div id="expenseContainer" class="space-y-3 mb-3"></div>
 
-            <div class="flex justify-between items-center px-1 text-xs sm:text-sm text-slate-300 border-t border-slate-700/60 pt-2.5">
-                <span>追加経費 合計: <strong id="totalExpenseText" class="text-amber-400 font-black">0円</strong></span>
-                <span class="text-xs text-slate-400">（参加選手1人あたり: <span id="perPlayerExpenseText" class="text-emerald-400 font-bold">0円</span> 加算）</span>
+            <div class="flex justify-between items-center px-1 text-xs sm:text-sm text-slate-300 border-t border-slate-700/60 pt-3">
+                <span>追加経費 合計: <strong id="totalExpenseText" class="text-amber-400 font-black text-sm sm:text-base">0円</strong></span>
+                <span class="text-xs text-slate-400">（参加選手1人あたり: <span id="perPlayerExpenseText" class="text-emerald-400 font-bold text-sm">0円</span> 加算）</span>
             </div>
         </div>
 
@@ -481,17 +477,17 @@
             calculate();
         }
 
-        // ★ スマホ向け追加経費入力欄の大サイズ表示生成
+        // ★ スマホ向け追加経費入力欄・金額幅の大型化表示
         function renderExpenseRows() {
             const container = document.getElementById('expenseContainer');
             container.innerHTML = extraExpenses.map((exp, index) => `
-                <div class="flex items-center gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-700/60">
-                    <input type="text" value="${exp.name || ''}" placeholder="項目名（例: 洗濯代）" onchange="extraExpenses[${index}].name=this.value; calculate();" class="flex-1 bg-slate-100 rounded-lg px-3 py-2 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500">
-                    <div class="relative w-32 sm:w-36">
-                        <input type="number" value="${exp.amount !== undefined ? exp.amount : ''}" placeholder="金額" onchange="extraExpenses[${index}].amount=Number(this.value); calculate();" class="w-full bg-slate-100 rounded-lg pl-3 pr-8 py-2 text-sm text-right font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
-                        <span class="absolute right-2.5 top-2.5 text-xs text-slate-500 font-bold">円</span>
+                <div class="flex items-center gap-2 bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-700/60">
+                    <input type="text" value="${exp.name || ''}" placeholder="項目名（例: 洗濯代）" onchange="extraExpenses[${index}].name=this.value; calculate();" class="flex-1 bg-slate-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500">
+                    <div class="relative w-36 sm:w-44 shrink-0">
+                        <input type="number" value="${exp.amount !== undefined ? exp.amount : ''}" placeholder="金額" onchange="extraExpenses[${index}].amount=Number(this.value); calculate();" class="w-full bg-slate-100 rounded-lg pl-3 pr-8 py-2.5 text-base text-right font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
+                        <span class="absolute right-3 top-3 text-xs text-slate-500 font-bold">円</span>
                     </div>
-                    <button type="button" onclick="extraExpenses.splice(${index},1); renderExpenseRows(); calculate();" class="bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 p-2 rounded-lg text-sm cursor-pointer shrink-0">
+                    <button type="button" onclick="extraExpenses.splice(${index},1); renderExpenseRows(); calculate();" class="bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 p-2.5 rounded-lg text-sm cursor-pointer shrink-0">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
