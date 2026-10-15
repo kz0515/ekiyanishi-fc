@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール Ver.1.0.1</title>
+    <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール Ver.1.0.7</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome icons -->
@@ -55,7 +55,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 mb-4 gap-2">
             <div>
                 <span class="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1">
-                    <i class="fa-solid fa-calculator"></i> 自動精算ツール Ver.1.0.1
+                    <i class="fa-solid fa-calculator"></i> 自動精算ツール Ver.1.0.7
                 </span>
                 <h1 class="text-lg sm:text-2xl font-black text-white tracking-tight">
                     駅家西FC 遠征費自動精算計算ツール
@@ -110,13 +110,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 text-xs">
                 <div>
                     <label class="block text-slate-300 font-semibold mb-1">遠征名称</label>
-                    <input type="text" id="tripName" value="8月 新居浜1泊2日遠征" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold">
+                    <input type="text" id="tripName" value="東広島2日間遠征" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold">
                 </div>
                 <div>
-                    <label class="block text-slate-300 font-semibold mb-1">遠征種別（分担金・補填倍率）</label>
+                    <label class="block text-slate-300 font-semibold mb-1">遠征区分</label>
                     <select id="tripType" onchange="onTripTypeChange();" class="w-full bg-slate-100 rounded pl-2 pr-6 py-1.5 font-semibold appearance-none">
-                        <option value="1">日帰り遠征（分担金 1,000円/日・補填1倍）</option>
-                        <option value="2" selected>1泊2日 宿泊遠征（分担金 2,000円・補填2倍）</option>
+                        <option value="1">日帰り遠征（宿泊計算なし）</option>
+                        <option value="2" selected>宿泊遠征（宿泊費・頭割りあり）</option>
                     </select>
                 </div>
                 <div>
@@ -144,14 +144,14 @@
                     <i class="fa-solid fa-receipt"></i>
                     現地追加経費（※洗濯代・氷代等、選手全員で割り勘）
                 </h2>
-                <button type="button" onclick="addExpenseRow()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition flex items-center gap-1 cursor-pointer btn-touch shadow">
+                <button type="button" onclick="addExpenseRow()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm px-3.5 py-1.5 sm:py-2 rounded-xl transition flex items-center gap-1 cursor-pointer btn-touch shadow">
                     <i class="fa-solid fa-plus"></i> 項目を追加
                 </button>
             </div>
             
             <div id="expenseContainer" class="space-y-3 mb-3"></div>
 
-            <div class="flex justify-between items-center px-1 text-xs sm:text-sm text-slate-300 border-t border-slate-700/60 pt-3">
+            <div class="flex flex-wrap justify-between items-center px-1 text-xs sm:text-sm text-slate-300 border-t border-slate-700/60 pt-3 gap-1">
                 <span>追加経費 合計: <strong id="totalExpenseText" class="text-amber-400 font-black text-sm sm:text-base">0円</strong></span>
                 <span class="text-xs text-slate-400">（参加選手1人あたり: <span id="perPlayerExpenseText" class="text-emerald-400 font-bold text-sm">0円</span> 加算）</span>
             </div>
@@ -180,17 +180,18 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left text-slate-300 min-w-[650px]">
+                <table class="w-full text-xs text-left text-slate-300 min-w-[720px]">
                     <thead class="bg-slate-950 text-slate-300 border-b border-slate-700 font-bold">
                         <tr>
-                            <th class="p-2 min-w-[75px] text-center">車両名</th>
-                            <th class="p-2 min-w-[150px]">車主（家庭/指導者）</th>
-                            <th class="p-2 text-center min-w-[60px]">荷物車</th>
-                            <th class="p-2 text-center min-w-[85px]">単独指導者<br><span class="text-[9px] font-normal text-sky-300">※高速分担金/ガソリン自腹</span></th>
-                            <th class="p-2 text-right min-w-[110px]">高速代（立替）</th>
-                            <th class="p-2 text-right min-w-[110px]">ガソリン代（立替）</th>
-                            <th class="p-2 text-center min-w-[75px]">乗車人数</th>
-                            <th class="p-2 text-center min-w-[90px]">操作</th>
+                            <th class="p-2 min-w-[70px] text-center">車両名</th>
+                            <th class="p-2 min-w-[140px]">車主（家庭/指導者）</th>
+                            <th class="p-2 min-w-[110px] text-center">出車日数（手当倍率）</th>
+                            <th class="p-2 text-center min-w-[55px]">荷物車</th>
+                            <th class="p-2 text-center min-w-[80px]">単独指導者<br><span class="text-[9px] font-normal text-sky-300">※立替自腹</span></th>
+                            <th class="p-2 text-right min-w-[100px]">高速代（立替）</th>
+                            <th class="p-2 text-right min-w-[100px]">ガソリン代（立替）</th>
+                            <th class="p-2 text-center min-w-[65px]">乗車</th>
+                            <th class="p-2 text-center min-w-[80px]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="carTableBody" class="divide-y divide-slate-700/60 font-medium"></tbody>
@@ -262,7 +263,7 @@
                     <thead class="bg-slate-950 text-slate-300 border-b border-slate-700 font-bold">
                         <tr>
                             <th class="p-2 min-w-[130px]">氏名（対象者）</th>
-                            <th class="p-2 min-w-[170px]">立場・続柄</th>
+                            <th class="p-2 min-w-[200px]">立場・乗車日数区分</th>
                             <th class="p-2 min-w-[160px]">
                                 <div class="flex items-center justify-between">
                                     <span>乗車車両</span>
@@ -381,11 +382,11 @@
         let playerRoster = ["石井", "土井", "山本", "福田", "高橋", "アチャリヤ", "松尾", "田中", "寺岡", "伊藤", "太枝", "高森", "芝内"];
         let adultRoster = [];
         let cars = [
-            { id: 1, driverName: "芝内", isEquipment: true, isSoloCoach: false, toll: 8000, gas: 5000 },
-            { id: 2, driverName: "福田", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
-            { id: 3, driverName: "福田", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
-            { id: 4, driverName: "高橋", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
-            { id: 5, driverName: "芝内", isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 }
+            { id: 1, driverName: "芝内", carDays: 2, isEquipment: true, isSoloCoach: false, toll: 8000, gas: 5000 },
+            { id: 2, driverName: "福田", carDays: 1, isEquipment: false, isSoloCoach: false, toll: 4000, gas: 2500 },
+            { id: 3, driverName: "福田", carDays: 1, isEquipment: false, isSoloCoach: false, toll: 4000, gas: 2500 },
+            { id: 4, driverName: "高橋", carDays: 2, isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 },
+            { id: 5, driverName: "芝内", carDays: 2, isEquipment: false, isSoloCoach: false, toll: 8000, gas: 5000 }
         ];
         let riders = [];
         let extraExpenses = [{ name: "洗濯代", amount: 1200 }, { name: "氷代（2日分）", amount: 800 }];
@@ -403,8 +404,8 @@
             const startVal = document.getElementById('startDate').value;
             if (!startVal) return;
             const startDate = new Date(startVal);
-            const isAccom = document.getElementById('tripType').value === "2";
-            if (isAccom) startDate.setDate(startDate.getDate() + 1);
+            const tripType = document.getElementById('tripType').value;
+            if (tripType === "2") startDate.setDate(startDate.getDate() + 1);
             document.getElementById('endDate').valueAsDate = startDate;
         }
 
@@ -477,17 +478,17 @@
             calculate();
         }
 
-        // ★ スマホ向け追加経費入力欄・金額幅の大型化表示
+        // スマホ縦向きはみ出し防止
         function renderExpenseRows() {
             const container = document.getElementById('expenseContainer');
             container.innerHTML = extraExpenses.map((exp, index) => `
-                <div class="flex items-center gap-2 bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-700/60">
-                    <input type="text" value="${exp.name || ''}" placeholder="項目名（例: 洗濯代）" onchange="extraExpenses[${index}].name=this.value; calculate();" class="flex-1 bg-slate-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500">
-                    <div class="relative w-36 sm:w-44 shrink-0">
-                        <input type="number" value="${exp.amount !== undefined ? exp.amount : ''}" placeholder="金額" onchange="extraExpenses[${index}].amount=Number(this.value); calculate();" class="w-full bg-slate-100 rounded-lg pl-3 pr-8 py-2.5 text-base text-right font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
-                        <span class="absolute right-3 top-3 text-xs text-slate-500 font-bold">円</span>
+                <div class="flex flex-wrap items-center gap-2 bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-700/60">
+                    <input type="text" value="${exp.name || ''}" placeholder="項目名（例: 洗濯代）" onchange="extraExpenses[${index}].name=this.value; calculate();" class="flex-1 min-w-[140px] bg-slate-100 rounded-lg px-3 py-2 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500">
+                    <div class="relative w-28 sm:w-36 shrink-0">
+                        <input type="number" value="${exp.amount !== undefined ? exp.amount : ''}" placeholder="金額" onchange="extraExpenses[${index}].amount=Number(this.value); calculate();" class="w-full bg-slate-100 rounded-lg pl-3 pr-7 py-2 text-sm text-right font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
+                        <span class="absolute right-2 top-2 text-xs text-slate-500 font-bold">円</span>
                     </div>
-                    <button type="button" onclick="extraExpenses.splice(${index},1); renderExpenseRows(); calculate();" class="bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 p-2.5 rounded-lg text-sm cursor-pointer shrink-0">
+                    <button type="button" onclick="extraExpenses.splice(${index},1); renderExpenseRows(); calculate();" class="bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 p-2 rounded-lg text-sm cursor-pointer shrink-0">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -532,7 +533,7 @@
             const currentRiderNames = riders.map(r => r.name);
             container.innerHTML = playerRoster.map((p, idx) => {
                 const isChecked = currentRiderNames.includes(p) || riders.length === 0;
-                const existingFamilyCount = riders.filter(r => r.name === p && r.relation !== 'child').length;
+                const existingFamilyCount = riders.filter(r => r.name === p && !r.relation.includes('child')).length;
                 return `
                     <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between gap-2">
                         <label class="flex items-center gap-2.5 cursor-pointer truncate py-1">
@@ -589,15 +590,17 @@
 
         function onRelationChange(index, value) {
             riders[index].relation = value;
-            if (value === 'coach') riders[index].hotelFee = 0;
+            if (value === 'coach' || value === 'child_none' || value === 'parent_daytrip') {
+                riders[index].hotelFee = 0;
+            }
             calculate();
         }
 
-        function addCar() { cars.push({ id: Date.now(), driverName: "", isEquipment: false, isSoloCoach: false, toll: 0, gas: 0 }); calculate(); }
-        function clearSingleCarRow(index) { cars[index].driverName = ""; cars[index].isEquipment = false; cars[index].isSoloCoach = false; cars[index].toll = 0; cars[index].gas = 0; calculate(); }
+        function addCar() { cars.push({ id: Date.now(), driverName: "", carDays: 1, isEquipment: false, isSoloCoach: false, toll: 0, gas: 0 }); calculate(); }
+        function clearSingleCarRow(index) { cars[index].driverName = ""; cars[index].carDays = 1; cars[index].isEquipment = false; cars[index].isSoloCoach = false; cars[index].toll = 0; cars[index].gas = 0; calculate(); }
         function removeCar(index) { cars.splice(index, 1); calculate(); }
         function clearAllCarFullData() {
-            cars.forEach(c => { c.driverName = ""; c.isEquipment = false; c.isSoloCoach = false; c.toll = 0; c.gas = 0; });
+            cars.forEach(c => { c.driverName = ""; c.carDays = 1; c.isEquipment = false; c.isSoloCoach = false; c.toll = 0; c.gas = 0; });
             calculate();
             showToast("配車データを一括クリアしました");
         }
@@ -612,7 +615,7 @@
         function copyFirstHotelFeeToAll() {
             if (riders.length === 0) return;
             const firstFee = Number(riders[0].hotelFee) || 0;
-            riders.forEach(r => { if (r.relation !== 'coach') r.hotelFee = firstFee; });
+            riders.forEach(r => { if (r.relation !== 'coach' && r.relation !== 'child_none' && r.relation !== 'parent_daytrip') r.hotelFee = firstFee; });
             calculate();
             showToast(`1行目の宿泊費(￥${firstFee.toLocaleString()})を全員にコピーしました！`);
         }
@@ -625,18 +628,27 @@
 
             const carBody = document.getElementById('carTableBody');
             carBody.innerHTML = cars.map((car, index) => {
-                const hostedCount = riders.filter(r => Number(r.carId) === car.id && (!isSameFamily(r.name, car.driverName) || r.relation === 'child')).length;
+                const hostedCount = riders.filter(r => Number(r.carId) === car.id && (!isSameFamily(r.name, car.driverName) || r.relation.includes('child'))).length;
                 let driverSelectOptions = `<option value="" ${!car.driverName ? 'selected' : ''}>-- 車主を選択 --</option>`;
                 driverSelectOptions += allRiderOptions.map(n => `<option value="${n}" ${car.driverName === n ? 'selected' : ''}>${n}${playerRoster.includes(n) ? '保護者' : ''}</option>`).join('');
+                
+                const daysVal = car.carDays || 1;
+
                 return `
                     <tr class="hover:bg-slate-700/30">
                         <td class="p-2 text-center font-black text-sky-400">${car.driverName ? car.driverName + '号' : '未設定号'}</td>
                         <td class="p-2"><select onchange="cars[${index}].driverName=this.value; calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs font-bold text-slate-900 appearance-none cursor-pointer">${driverSelectOptions}</select></td>
+                        <td class="p-2">
+                            <select onchange="cars[${index}].carDays=Number(this.value); calculate();" class="w-full bg-slate-100 rounded px-1.5 py-1.5 text-xs font-bold text-slate-900 appearance-none cursor-pointer">
+                                <option value="1" ${daysVal === 1 ? 'selected' : ''}>1日担当(1倍)</option>
+                                <option value="2" ${daysVal === 2 ? 'selected' : ''}>2日間担当(2倍)</option>
+                            </select>
+                        </td>
                         <td class="p-2 text-center"><input type="checkbox" ${car.isEquipment ? 'checked' : ''} onchange="cars[${index}].isEquipment=this.checked; calculate();" class="w-5 h-5 accent-emerald-500 cursor-pointer"></td>
                         <td class="p-2 text-center"><input type="checkbox" ${car.isSoloCoach ? 'checked' : ''} onchange="cars[${index}].isSoloCoach=this.checked; calculate();" class="w-5 h-5 accent-sky-500 cursor-pointer"></td>
                         <td class="p-2"><input type="number" value="${car.toll ? car.toll : ''}" onchange="cars[${index}].toll=Number(this.value); calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs text-right font-bold text-slate-900" placeholder="0"></td>
                         <td class="p-2"><input type="number" value="${car.gas ? car.gas : ''}" onchange="cars[${index}].gas=Number(this.value); calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs text-right font-bold text-emerald-900" placeholder="0"></td>
-                        <td class="p-2 text-center"><span class="inline-flex items-center gap-1 bg-slate-950 text-emerald-400 font-bold px-2.5 py-1 rounded border border-slate-700 text-xs">${hostedCount} 名</span></td>
+                        <td class="p-2 text-center"><span class="inline-flex items-center gap-1 bg-slate-950 text-emerald-400 font-bold px-2 py-1 rounded border border-slate-700 text-xs">${hostedCount} 名</span></td>
                         <td class="p-2 text-center"><div class="flex items-center justify-center gap-1"><button onclick="clearSingleCarRow(${index})" title="クリア" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-broom"></i></button><button onclick="removeCar(${index})" title="削除" class="bg-rose-800 hover:bg-rose-700 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>
                 `;
@@ -645,7 +657,8 @@
             const riderBody = document.getElementById('riderTableBody');
             const claimedDriverCars = new Set();
             riderBody.innerHTML = riders.map((rider, index) => {
-                const isAdult = (rider.relation === 'parent1' || rider.relation === 'coach');
+                const isAdult = (rider.relation === 'parent1' || rider.relation === 'coach' || rider.relation === 'parent_daytrip');
+                
                 const carOptions = cars.map((c) => {
                     const isFam = isSameFamily(rider.name, c.driverName);
                     const isSelected = (Number(rider.carId) === c.id);
@@ -656,22 +669,25 @@
 
                 let riderSelectOptions = `<option value="" ${!rider.name ? 'selected' : ''}>-- 名前を選択 --</option>`;
                 riderSelectOptions += allRiderOptions.map(n => `<option value="${n}" ${rider.name === n ? 'selected' : ''}>${n}</option>`).join('');
-                const isCoach = (rider.relation === 'coach');
+                const isNoHotel = (rider.relation === 'coach' || rider.relation === 'child_none' || rider.relation === 'parent_daytrip');
 
                 return `
                     <tr class="hover:bg-slate-700/30">
                         <td class="p-2"><select onchange="riders[${index}].name=this.value; calculate();" class="w-full bg-slate-100 rounded px-2 py-1.5 text-xs font-bold text-slate-900 appearance-none cursor-pointer">${riderSelectOptions}</select></td>
                         <td class="p-2">
                             <select onchange="onRelationChange(${index}, this.value)" class="w-full bg-slate-100 rounded pl-2 py-1.5 text-xs font-semibold appearance-none cursor-pointer">
-                                <option value="child" ${rider.relation === 'child' ? 'selected' : ''}>本人 (選手)</option>
+                                <option value="child" ${rider.relation === 'child' ? 'selected' : ''}>本人 (選手・2日間フル乗車 ￥2000)</option>
+                                <option value="child_1day" ${rider.relation === 'child_1day' ? 'selected' : ''}>本人 (選手・1日のみ乗車 ￥1000)</option>
+                                <option value="child_none" ${rider.relation === 'child_none' ? 'selected' : ''}>本人 (選手・自家送迎/実費0円 ￥0)</option>
                                 <option value="parent1" ${rider.relation === 'parent1' ? 'selected' : ''}>保護者(1人目・頭割り対象)</option>
+                                <option value="parent_daytrip" ${rider.relation === 'parent_daytrip' ? 'selected' : ''}>保護者(日帰り・宿泊費免除)</option>
                                 <option value="parent2" ${rider.relation === 'parent2' ? 'selected' : ''}>保護者(2人目/身内・助手席等)</option>
                                 <option value="sibling" ${rider.relation === 'sibling' ? 'selected' : ''}>兄弟・その他家族</option>
                                 <option value="coach" ${rider.relation === 'coach' ? 'selected' : ''}>指導者 (宿泊部費)</option>
                             </select>
                         </td>
-                        <td class="p-2"><select onchange="riders[${index}].carId=this.value ? Number(this.value) : ''; calculate();" class="w-full bg-slate-100 rounded pl-2 py-1.5 text-xs font-semibold appearance-none cursor-pointer"><option value="">-- 車両を選択 --</option>${carOptions}</select></td>
-                        <td class="p-2 text-right accom-col"><input type="number" value="${isCoach ? '' : (rider.hotelFee ? rider.hotelFee : '')}" ${isCoach ? 'disabled' : ''} onchange="riders[${index}].hotelFee=Number(this.value); calculate();" class="w-full ${isCoach ? 'bg-slate-300 text-slate-500' : 'bg-slate-100 text-slate-900'} font-bold rounded px-2 py-1.5 text-xs text-right" placeholder="${isCoach ? '部費支給' : '0'}"></td>
+                        <td class="p-2"><select onchange="riders[${index}].carId=this.value ? Number(this.value) : ''; calculate();" class="w-full bg-slate-100 rounded pl-2 py-1.5 text-xs font-semibold appearance-none cursor-pointer"><option value="">-- 乗車車両（自車時未選択） --</option>${carOptions}</select></td>
+                        <td class="p-2 text-right accom-col"><input type="number" value="${isNoHotel ? '' : (rider.hotelFee ? rider.hotelFee : '')}" ${isNoHotel ? 'disabled' : ''} onchange="riders[${index}].hotelFee=Number(this.value); calculate();" class="w-full ${isNoHotel ? 'bg-slate-300 text-slate-500' : 'bg-slate-100 text-slate-900'} font-bold rounded px-2 py-1.5 text-xs text-right" placeholder="${isNoHotel ? '宿泊なし/部費' : '0'}"></td>
                         <td class="p-2 text-right accom-col"><input type="number" value="${rider.paidAdvance ? rider.paidAdvance : ''}" onchange="riders[${index}].paidAdvance=Number(this.value); calculate();" class="w-full bg-sky-100 text-sky-950 font-bold rounded px-2 py-1.5 text-xs text-right border border-sky-300" placeholder="0"></td>
                         <td class="p-2 text-center"><div class="flex items-center justify-center gap-1.5"><button onclick="clearSingleRiderRow(${index})" title="クリア" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-broom"></i></button><button onclick="removeRider(${index})" title="削除" class="bg-rose-800 hover:bg-rose-700 text-white font-bold text-xs px-2 py-1.5 rounded cursor-pointer btn-touch"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>
@@ -681,7 +697,6 @@
             toggleAccommodation();
         }
 
-        // ★ 手当の基本基準額（日帰り: 1倍 / 1泊2日: 2倍 に自動連動）
         function getCompensationBase(hostedCount, isEquipment) {
             if (isEquipment) return 2000;
             if (hostedCount >= 7) return 3000;
@@ -700,12 +715,10 @@
             renderInputs();
 
             const isAccom = document.getElementById('tripType').value === "2";
-            const days = isAccom ? 2 : 1; // 日帰り: 1日(1倍) / 宿泊: 2日(2倍)
-            const feePerChild = 1000 * days;
 
-            let cntPlayer = riders.filter(r => r.relation === 'child' && r.name).length;
+            let cntPlayer = riders.filter(r => (r.relation.includes('child')) && r.name).length;
             let cntCoach = riders.filter(r => r.relation === 'coach' && r.name).length;
-            let cntAdult = riders.filter(r => r.relation !== 'child' && r.relation !== 'coach' && r.name).length;
+            let cntAdult = riders.filter(r => !r.relation.includes('child') && r.relation !== 'coach' && r.name).length;
             let cntTotal = riders.filter(r => r.name).length;
 
             document.getElementById('cntPlayer').innerText = cntPlayer;
@@ -716,7 +729,6 @@
             let totalPlayers = cntPlayer;
             const totalExtraExpense = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
             
-            // 追加経費の1人あたり（10円単位切り上げ）
             const perPlayerExpense = (totalPlayers > 0 && totalExtraExpense > 0) ? Math.ceil((totalExtraExpense / totalPlayers) / 10) * 10 : 0;
             
             document.getElementById('totalExpenseText').innerText = totalExtraExpense.toLocaleString() + "円";
@@ -724,11 +736,9 @@
 
             let totalReceiptsForPlayers = cars.reduce((sum, c) => c.isSoloCoach ? sum : sum + (Number(c.toll) || 0) + (Number(c.gas) || 0), 0);
             
-            // ★ 移動費実費：10の位切り上げ（100円単位に切り上げ）
             let rawPerPlayerActual = totalPlayers > 0 ? (totalReceiptsForPlayers / totalPlayers) : 0;
             let perPlayerActual = Math.ceil(rawPerPlayerActual / 100) * 100;
 
-            // ★ 帯同大人頭割り金額：1の位切り上げ（10円単位に切り上げ）
             let rawChaperonePerPlayer = (totalPlayers > 0 && isAccom) ? (autoChaperoneSum / totalPlayers) : 0;
             let chaperonePerPlayer = Math.ceil(rawChaperonePerPlayer / 10) * 10;
 
@@ -738,45 +748,54 @@
 
             let familyMap = {};
 
+            // Drivers
             cars.forEach(car => {
                 if (!car.driverName) return;
                 let fname = car.driverName.replace(/コーチ|監督|保護者/g, '').trim();
                 if (!familyMap[fname]) {
                     familyMap[fname] = { name: fname + (playerRoster.includes(fname) ? '保護者' : ''), type: car.isEquipment ? "指導者/荷物車" : (car.isSoloCoach ? "単独指導者車" : "配車ドライバー"), actualTravel: 0, seatFee: 0, compensation: 0, hotelFee: 0, extraExpense: 0, paidAdvance: 0, receipt: 0 };
                 }
-                let hostedCount = riders.filter(r => Number(r.carId) === car.id && (!isSameFamily(r.name, car.driverName) || r.relation === 'child')).length;
-                let childCount = riders.filter(r => Number(r.carId) === car.id && isSameFamily(r.name, car.driverName) && r.relation === 'child').length;
+                let hostedCount = riders.filter(r => Number(r.carId) === car.id && (!isSameFamily(r.name, car.driverName) || r.relation.includes('child'))).length;
+                let childCount = riders.filter(r => Number(r.carId) === car.id && isSameFamily(r.name, car.driverName) && r.relation.includes('child')).length;
                 
-                // ★ 配車手当：遠征日数（days: 1倍または2倍）と自動連動
+                let carDaysVal = car.carDays || 1;
                 let baseComp = getCompensationBase(hostedCount, car.isEquipment);
-                let finalComp = baseComp * days;
+                let finalComp = baseComp * carDaysVal;
 
-                familyMap[fname].actualTravel += childCount * perPlayerActual;
-                familyMap[fname].seatFee += childCount * feePerChild;
                 familyMap[fname].compensation -= finalComp;
-                familyMap[fname].hotelFee += isAccom ? (childCount * chaperonePerPlayer) : 0;
-                familyMap[fname].extraExpense += childCount * perPlayerExpense;
                 familyMap[fname].receipt += car.isSoloCoach ? (Number(car.toll) || 0) : ((Number(car.toll) || 0) + (Number(car.gas) || 0));
             });
 
+            // Riders
             riders.forEach(rider => {
                 if (!rider.name) return;
                 let fname = rider.name.replace(/コーチ|監督|保護者/g, '').trim();
                 if (!familyMap[fname]) {
-                    familyMap[fname] = { name: fname + (rider.relation !== 'child' && rider.relation !== 'coach' && playerRoster.includes(fname) ? '保護者' : ''), type: rider.relation === 'coach' ? "指導者" : (rider.relation === 'child' ? "選手家庭" : "帯同家庭"), actualTravel: 0, seatFee: 0, compensation: 0, hotelFee: 0, extraExpense: 0, paidAdvance: 0, receipt: 0 };
+                    familyMap[fname] = { name: fname + (!rider.relation.includes('child') && rider.relation !== 'coach' && playerRoster.includes(fname) ? '保護者' : ''), type: rider.relation === 'coach' ? "指導者" : (rider.relation.includes('child') ? "選手家庭" : "帯同家庭"), actualTravel: 0, seatFee: 0, compensation: 0, hotelFee: 0, extraExpense: 0, paidAdvance: 0, receipt: 0 };
                 }
-                let isChild = (rider.relation === 'child');
+                let isChild = rider.relation.includes('child');
                 let isCoach = (rider.relation === 'coach');
                 let isParent1 = (rider.relation === 'parent1');
                 let isDriverChild = cars.some(c => isSameFamily(fname, c.driverName) && Number(rider.carId) === c.id);
 
-                if (isChild && !isDriverChild) {
-                    familyMap[fname].actualTravel += perPlayerActual;
-                    familyMap[fname].seatFee += feePerChild;
+                // 個別分担金の計算
+                let riderSeatFee = 0;
+                if (rider.relation === 'child') riderSeatFee = 2000;
+                else if (rider.relation === 'child_1day') riderSeatFee = 1000;
+                else if (rider.relation === 'child_none') riderSeatFee = 0;
+
+                if (isChild) {
+                    // 自家送迎（child_none）でない場合は実費を計算
+                    if (!isDriverChild && rider.relation !== 'child_none') {
+                        familyMap[fname].actualTravel += perPlayerActual;
+                    }
+                    familyMap[fname].seatFee += riderSeatFee;
                     familyMap[fname].extraExpense += perPlayerExpense;
-                    if (isAccom) familyMap[fname].hotelFee += chaperonePerPlayer;
+                    if (isAccom && rider.relation !== 'child_none') familyMap[fname].hotelFee += chaperonePerPlayer;
                 }
-                if (isAccom && !isCoach && !isParent1) familyMap[fname].hotelFee += Number(rider.hotelFee) || 0;
+                if (isAccom && !isCoach && !isParent1 && rider.relation !== 'child_none' && rider.relation !== 'parent_daytrip') {
+                    familyMap[fname].hotelFee += Number(rider.hotelFee) || 0;
+                }
                 if (isAccom) familyMap[fname].paidAdvance += Number(rider.paidAdvance) || 0;
             });
 
