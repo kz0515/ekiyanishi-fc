@@ -7,12 +7,16 @@
     <title>【駅家西FC】遠征費・宿泊費 自動精算計算ツール</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
@@ -51,11 +55,11 @@
 
     <div class="max-w-6xl mx-auto bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 p-3 sm:p-5">
         
-        <!-- Header -->
+        <!-- App Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 mb-4 gap-2">
             <div>
                 <span class="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1">
-                    <i class="fa-solid fa-mobile-screen-button"></i> 自動精算ツール
+                    <i class="fa-solid fa-mobile-screen-button"></i> iPhone最適化・自動精算ツール
                 </span>
                 <h1 class="text-lg sm:text-2xl font-black text-white tracking-tight">
                     駅家西FC 遠征費自動精算計算ツール
@@ -113,10 +117,10 @@
                     <input type="text" id="tripName" value="8月 新居浜1泊2日遠征" class="w-full bg-slate-100 rounded px-2 py-1.5 font-semibold">
                 </div>
                 <div>
-                    <label class="block text-slate-300 font-semibold mb-1">遠征種別（分担金）</label>
+                    <label class="block text-slate-300 font-semibold mb-1">遠征種別（分担金・補填倍率）</label>
                     <select id="tripType" onchange="onTripTypeChange();" class="w-full bg-slate-100 rounded pl-2 pr-6 py-1.5 font-semibold appearance-none">
-                        <option value="1">日帰り遠征（分担金 1,000円/日）</option>
-                        <option value="2" selected>1泊2日 宿泊遠征（分担金 2,000円）</option>
+                        <option value="1">日帰り遠征（分担金 1,000円/日・補填1倍）</option>
+                        <option value="2" selected>1泊2日 宿泊遠征（分担金 2,000円・補填2倍）</option>
                     </select>
                 </div>
                 <div>
@@ -137,23 +141,23 @@
             </div>
         </div>
 
-        <!-- Section 2.5: 現地追加経費 -->
-        <div class="bg-slate-800/90 rounded-xl p-3 mb-4 border border-slate-700/80">
-            <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+        <!-- Section 2.5: 現地追加経費（スマホで見やすいよう入力欄を大サイズ化） -->
+        <div class="bg-slate-800/90 rounded-xl p-3 sm:p-4 mb-4 border border-slate-700/80">
+            <div class="flex flex-wrap justify-between items-center mb-2.5 gap-2">
                 <h2 class="text-xs sm:text-sm font-bold text-emerald-400 flex items-center gap-1.5">
                     <i class="fa-solid fa-receipt"></i>
                     現地追加経費（※洗濯代・氷代等、選手全員で割り勘）
                 </h2>
-                <button type="button" onclick="addExpenseRow()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
+                <button type="button" onclick="addExpenseRow()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1 cursor-pointer btn-touch">
                     <i class="fa-solid fa-plus"></i> 項目を追加
                 </button>
             </div>
             
-            <div id="expenseContainer" class="space-y-2 mb-2"></div>
+            <div id="expenseContainer" class="space-y-2.5 mb-2.5"></div>
 
-            <div class="flex justify-between items-center px-1 text-xs text-slate-300 border-t border-slate-700/60 pt-2">
+            <div class="flex justify-between items-center px-1 text-xs sm:text-sm text-slate-300 border-t border-slate-700/60 pt-2.5">
                 <span>追加経費 合計: <strong id="totalExpenseText" class="text-amber-400 font-black">0円</strong></span>
-                <span class="text-[11px] text-slate-400">（参加選手1人あたり: <span id="perPlayerExpenseText" class="text-emerald-400 font-bold">0円</span> 加算）</span>
+                <span class="text-xs text-slate-400">（参加選手1人あたり: <span id="perPlayerExpenseText" class="text-emerald-400 font-bold">0円</span> 加算）</span>
             </div>
         </div>
 
@@ -303,8 +307,8 @@
                 </div>
                 <div class="flex flex-wrap gap-2 text-[11px] font-bold">
                     <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">全参加選手数: <span id="totalPlayersDisplay" class="text-emerald-400 font-black">0</span> 名</div>
-                    <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">選手1人当たり移動実費: <span id="perPersonActualDisplay" class="text-emerald-400 font-black">0</span> 円</div>
-                    <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">帯同大人頭割り/選手: <span id="perPlayerChaperoneDisplay" class="text-amber-400 font-black">0</span> 円</div>
+                    <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">選手1人当たり移動実費: <span id="perPersonActualDisplay" class="text-emerald-400 font-black">0</span> 円 <span class="text-[9px] text-slate-400 font-normal">（10の位切り上げ）</span></div>
+                    <div class="bg-slate-950 px-2.5 py-1 rounded border border-slate-700">大人頭割り/選手: <span id="perPlayerChaperoneDisplay" class="text-amber-400 font-black">0</span> 円 <span class="text-[9px] text-slate-400 font-normal">（1の位切り上げ）</span></div>
                 </div>
             </div>
 
@@ -416,7 +420,6 @@
         }
 
         function resetSampleRoster() {
-            if (!confirm("サンプルデータを読み込みますか？（入力中の内容はリセットされます）")) return;
             document.getElementById('playerRosterInput').value = playerRoster.join(', ');
             document.getElementById('adultRosterInput').value = adultRoster.join(', ');
             riders = [
@@ -444,15 +447,14 @@
                 { id: 133, name: "芝内", relation: "parent2", carId: 5, hotelFee: 4500, paidAdvance: 0 }
             ];
             updateRoster();
-            alert("新居浜サンプルデータをセットしました");
+            showToast("新居浜サンプルデータをセットしました");
         }
 
         function clearRosterText() {
-            if (!confirm("名簿テキストをクリアしますか？")) return;
             document.getElementById('playerRosterInput').value = '';
             document.getElementById('adultRosterInput').value = '';
             updateRoster();
-            alert("名簿テキストを消去しました");
+            showToast("名簿テキストを消去しました");
         }
 
         function updateRoster() {
@@ -479,16 +481,19 @@
             calculate();
         }
 
+        // ★ スマホ向け追加経費入力欄の大サイズ表示生成
         function renderExpenseRows() {
             const container = document.getElementById('expenseContainer');
             container.innerHTML = extraExpenses.map((exp, index) => `
-                <div class="flex items-center gap-2">
-                    <input type="text" value="${exp.name || ''}" placeholder="項目名（例: 洗濯代）" onchange="extraExpenses[${index}].name=this.value; calculate();" class="flex-1 bg-slate-100 rounded px-2 py-1 text-xs font-semibold text-slate-900">
-                    <div class="relative w-28">
-                        <input type="number" value="${exp.amount !== undefined ? exp.amount : ''}" placeholder="金額" onchange="extraExpenses[${index}].amount=Number(this.value); calculate();" class="w-full bg-slate-100 rounded pl-2 pr-6 py-1 text-xs text-right font-bold text-slate-900">
-                        <span class="absolute right-2 top-1 text-[10px] text-slate-500">円</span>
+                <div class="flex items-center gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-700/60">
+                    <input type="text" value="${exp.name || ''}" placeholder="項目名（例: 洗濯代）" onchange="extraExpenses[${index}].name=this.value; calculate();" class="flex-1 bg-slate-100 rounded-lg px-3 py-2 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500">
+                    <div class="relative w-32 sm:w-36">
+                        <input type="number" value="${exp.amount !== undefined ? exp.amount : ''}" placeholder="金額" onchange="extraExpenses[${index}].amount=Number(this.value); calculate();" class="w-full bg-slate-100 rounded-lg pl-3 pr-8 py-2 text-sm text-right font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
+                        <span class="absolute right-2.5 top-2.5 text-xs text-slate-500 font-bold">円</span>
                     </div>
-                    <button type="button" onclick="extraExpenses.splice(${index},1); renderExpenseRows(); calculate();" class="text-rose-400 hover:text-rose-300 px-1.5 py-1 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                    <button type="button" onclick="extraExpenses.splice(${index},1); renderExpenseRows(); calculate();" class="bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 p-2 rounded-lg text-sm cursor-pointer shrink-0">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
             `).join('');
         }
@@ -496,7 +501,6 @@
         function addExpenseRow() { extraExpenses.push({ name: "", amount: 0 }); renderExpenseRows(); calculate(); }
 
         function saveDraftData() {
-            if (!confirm("現在の入力内容をブラウザに途中保存しますか？")) return;
             const data = {
                 tripName: document.getElementById('tripName').value,
                 tripType: document.getElementById('tripType').value,
@@ -507,13 +511,12 @@
                 cars: cars, riders: riders, extraExpenses: extraExpenses
             };
             localStorage.setItem('ekiyanishi_fc_draft', JSON.stringify(data));
-            alert("途中の入力状態を保存しました！");
+            showToast("途中の入力状態を保存しました！");
         }
 
         function loadDraftData() {
             const saved = localStorage.getItem('ekiyanishi_fc_draft');
-            if (!saved) return alert("保存されたデータが見つかりません。");
-            if (!confirm("前回保存したデータを読み込みますか？（現在入力中の内容は上書きされます）")) return;
+            if (!saved) return showToast("保存されたデータが見つかりません。");
             try {
                 const data = JSON.parse(saved);
                 document.getElementById('tripName').value = data.tripName || '';
@@ -524,8 +527,8 @@
                 document.getElementById('adultRosterInput').value = data.adultRosterText || '';
                 cars = data.cars || []; riders = data.riders || []; extraExpenses = data.extraExpenses || [];
                 updateRoster();
-                alert("保存していたデータを復元しました！");
-            } catch(e) { alert("データの復元に失敗しました。"); }
+                showToast("保存していたデータを復元しました！");
+            } catch(e) { showToast("データの復元に失敗しました。"); }
         }
 
         function openPlayerCheckModal() {
@@ -571,6 +574,7 @@
             riders = [...newRidersList, ...extraRiders];
             calculate();
             closePlayerCheckModal();
+            showToast(`反映しました！`);
         }
 
         function toggleAccommodation() {
@@ -584,6 +588,7 @@
             const defaultName = playerRoster.length > 0 ? playerRoster[0] : "";
             riders.push({ id: Date.now() + Math.random(), name: defaultName, relation: "parent1", carId: defaultCarId, hotelFee: 0, paidAdvance: 0 });
             calculate();
+            showToast("行を追加しました");
         }
 
         function onRelationChange(index, value) {
@@ -595,24 +600,28 @@
         function addCar() { cars.push({ id: Date.now(), driverName: "", isEquipment: false, isSoloCoach: false, toll: 0, gas: 0 }); calculate(); }
         function clearSingleCarRow(index) { cars[index].driverName = ""; cars[index].isEquipment = false; cars[index].isSoloCoach = false; cars[index].toll = 0; cars[index].gas = 0; calculate(); }
         function removeCar(index) { cars.splice(index, 1); calculate(); }
-        function clearAllCarFullData() { if (!confirm("配車データを一括クリアしますか？")) return; cars.forEach(c => { c.driverName = ""; c.isEquipment = false; c.isSoloCoach = false; c.toll = 0; c.gas = 0; }); calculate(); }
-        function removeAllCars() { if (!confirm("車両の行をすべて削除しますか？")) return; cars = []; calculate(); }
+        function clearAllCarFullData() {
+            cars.forEach(c => { c.driverName = ""; c.isEquipment = false; c.isSoloCoach = false; c.toll = 0; c.gas = 0; });
+            calculate();
+            showToast("配車データを一括クリアしました");
+        }
+        function removeAllCars() { cars = []; calculate(); showToast("車両の行を削除しました"); }
 
         function addRider() { const defaultCarId = cars.length > 0 ? cars[0].id : ""; riders.push({ id: Date.now(), name: "", relation: "child", carId: defaultCarId, hotelFee: 0, paidAdvance: 0 }); calculate(); }
         function clearSingleRiderRow(index) { riders[index].name = ""; riders[index].relation = "child"; riders[index].carId = ""; riders[index].hotelFee = 0; riders[index].paidAdvance = 0; calculate(); }
         function removeRider(index) { riders.splice(index, 1); calculate(); }
-        function removeAllRiders() { if (!confirm("同乗者の行をすべて削除しますか？")) return; riders = []; calculate(); }
+        function removeAllRiders() { riders = []; calculate(); showToast("同乗者の行を削除しました"); }
 
-        function clearColumnCars() { if (!confirm("すべての乗車車両指定を一括解除しますか？")) return; riders.forEach(r => r.carId = ""); calculate(); }
+        function clearColumnCars() { riders.forEach(r => r.carId = ""); calculate(); showToast("すべての乗車車両指定を一括解除しました"); }
         function copyFirstHotelFeeToAll() {
             if (riders.length === 0) return;
             const firstFee = Number(riders[0].hotelFee) || 0;
-            if (!confirm(`1行目の宿泊費(￥${firstFee.toLocaleString()})を全員にコピーしますか？`)) return;
             riders.forEach(r => { if (r.relation !== 'coach') r.hotelFee = firstFee; });
             calculate();
+            showToast(`1行目の宿泊費(￥${firstFee.toLocaleString()})を全員にコピーしました！`);
         }
-        function clearColumnHotelFee() { if (!confirm("すべての確定宿泊費を0にクリアしますか？")) return; riders.forEach(r => r.hotelFee = 0); calculate(); }
-        function clearColumnPaidAdvance() { if (!confirm("すべての事前集金額を0にクリアしますか？")) return; riders.forEach(r => r.paidAdvance = 0); calculate(); }
+        function clearColumnHotelFee() { riders.forEach(r => r.hotelFee = 0); calculate(); showToast("すべての確定宿泊費をクリアしました"); }
+        function clearColumnPaidAdvance() { riders.forEach(r => r.paidAdvance = 0); calculate(); showToast("すべての事前集金額をクリアしました"); }
 
         function renderInputs() {
             renderExpenseRows();
@@ -676,7 +685,8 @@
             toggleAccommodation();
         }
 
-        function getCompensation(hostedCount, isEquipment) {
+        // ★ 手当の基本基準額（日帰り: 1倍 / 1泊2日: 2倍 に自動連動）
+        function getCompensationBase(hostedCount, isEquipment) {
             if (isEquipment) return 2000;
             if (hostedCount >= 7) return 3000;
             if (hostedCount >= 5) return 2000;
@@ -694,7 +704,7 @@
             renderInputs();
 
             const isAccom = document.getElementById('tripType').value === "2";
-            const days = isAccom ? 2 : 1;
+            const days = isAccom ? 2 : 1; // 日帰り: 1日(1倍) / 宿泊: 2日(2倍)
             const feePerChild = 1000 * days;
 
             let cntPlayer = riders.filter(r => r.relation === 'child' && r.name).length;
@@ -709,14 +719,22 @@
 
             let totalPlayers = cntPlayer;
             const totalExtraExpense = extraExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            
+            // 追加経費の1人あたり（10円単位切り上げ）
             const perPlayerExpense = (totalPlayers > 0 && totalExtraExpense > 0) ? Math.ceil((totalExtraExpense / totalPlayers) / 10) * 10 : 0;
             
             document.getElementById('totalExpenseText').innerText = totalExtraExpense.toLocaleString() + "円";
             document.getElementById('perPlayerExpenseText').innerText = perPlayerExpense.toLocaleString() + "円";
 
             let totalReceiptsForPlayers = cars.reduce((sum, c) => c.isSoloCoach ? sum : sum + (Number(c.toll) || 0) + (Number(c.gas) || 0), 0);
-            let perPlayerActual = totalPlayers > 0 ? Math.round(totalReceiptsForPlayers / totalPlayers) : 0;
-            let chaperonePerPlayer = (totalPlayers > 0 && isAccom) ? Math.round(autoChaperoneSum / totalPlayers) : 0;
+            
+            // ★ 移動費実費：10の位切り上げ（100円単位に切り上げ）
+            let rawPerPlayerActual = totalPlayers > 0 ? (totalReceiptsForPlayers / totalPlayers) : 0;
+            let perPlayerActual = Math.ceil(rawPerPlayerActual / 100) * 100;
+
+            // ★ 帯同大人頭割り金額：1の位切り上げ（10円単位に切り上げ）
+            let rawChaperonePerPlayer = (totalPlayers > 0 && isAccom) ? (autoChaperoneSum / totalPlayers) : 0;
+            let chaperonePerPlayer = Math.ceil(rawChaperonePerPlayer / 10) * 10;
 
             document.getElementById('totalPlayersDisplay').innerText = totalPlayers;
             document.getElementById('perPersonActualDisplay').innerText = perPlayerActual.toLocaleString();
@@ -732,9 +750,14 @@
                 }
                 let hostedCount = riders.filter(r => Number(r.carId) === car.id && (!isSameFamily(r.name, car.driverName) || r.relation === 'child')).length;
                 let childCount = riders.filter(r => Number(r.carId) === car.id && isSameFamily(r.name, car.driverName) && r.relation === 'child').length;
+                
+                // ★ 配車手当：遠征日数（days: 1倍または2倍）と自動連動
+                let baseComp = getCompensationBase(hostedCount, car.isEquipment);
+                let finalComp = baseComp * days;
+
                 familyMap[fname].actualTravel += childCount * perPlayerActual;
                 familyMap[fname].seatFee += childCount * feePerChild;
-                familyMap[fname].compensation -= getCompensation(hostedCount, car.isEquipment);
+                familyMap[fname].compensation -= finalComp;
                 familyMap[fname].hotelFee += isAccom ? (childCount * chaperonePerPlayer) : 0;
                 familyMap[fname].extraExpense += childCount * perPlayerExpense;
                 familyMap[fname].receipt += car.isSoloCoach ? (Number(car.toll) || 0) : ((Number(car.toll) || 0) + (Number(car.gas) || 0));
@@ -818,7 +841,29 @@
             const copyText = document.getElementById("lineTextOutput");
             copyText.select();
             copyText.setSelectionRange(0, 99999);
-            try { document.execCommand('copy'); alert("LINE報告用文章をコピーしました！"); } catch (err) { alert("コピーに失敗しました。"); }
+            try {
+                document.execCommand('copy');
+                showToast("LINE報告用文章をコピーしました！");
+            } catch (err) {
+                showToast("コピーに失敗しました。");
+            }
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById('customToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'customToast';
+                toast.className = 'fixed bottom-5 right-5 bg-emerald-600 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 z-50 flex items-center gap-2 border border-emerald-400/30';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-200 text-sm"></i> ${message}`;
+            toast.classList.remove('translate-y-10', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-10', 'opacity-0');
+            }, 3000);
         }
 
         function downloadTextForPC() {
@@ -851,7 +896,6 @@
             setTimeout(() => URL.revokeObjectURL(url), 2000);
         }
 
-        // 📱 iPhoneポップアップブロックを100%回避する直接PDF化関数
         function openPrintPdfDirectly() {
             const tripName = document.getElementById('tripName').value;
             const tripDateRange = getFormattedDateRange();
@@ -930,12 +974,10 @@
 </body>
 </html>`;
 
-            // iPhoneでのポップアップブロックを完璧に回避
             document.open();
             document.write(fullHtml);
             document.close();
 
-            // 100ms後に自動でiPhoneの標準共有・保存（印刷ダイアログ）を呼び出す
             setTimeout(function() {
                 window.print();
             }, 100);
@@ -950,7 +992,7 @@
             const file = new File([csvStr], `駅家西FC_精算結果_${new Date().toISOString().slice(0,10)}.csv`, { type: 'text/csv' });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try { await navigator.share({ files: [file] }); } catch (err) {}
-            } else { alert("お使いの環境ではCSV共有機能が使えません。"); }
+            } else { showToast("お使いの環境ではCSV共有機能が使えません。"); }
         }
 
         window.onload = function() { resetSampleRoster(); };
